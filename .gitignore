@@ -2,6 +2,9 @@
 node_modules
 /dist
 
+src/util/keys.ts
+public/aa.woff2
+build/plugin
 
 # local env files
 .env.local

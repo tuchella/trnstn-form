@@ -1,0 +1,16 @@
+{
+  "hosting": {
+    "public": "dist",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "!**/*.@(css|js|png|jpg|jpeg|gif|svg|ico|txt)",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
