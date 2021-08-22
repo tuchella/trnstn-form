@@ -38,7 +38,10 @@
         </v-stepper-content>
 
         <v-stepper-content step="3">
-          <PublishToCmsStep v-model="show" :show="show" />
+          <PublishToCmsStep 
+            v-for="act in show.acts"
+            v-bind:key="act.id" 
+            :act="act" :show="show" />
 
           <div class="upload-form__ctls">
             <v-btn text @click="currentStep--"> Back </v-btn>

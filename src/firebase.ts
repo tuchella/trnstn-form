@@ -1,6 +1,6 @@
 import fb from 'firebase/app'
-import 'firebase/auth'
 import 'firebase/firestore'
+import 'firebase/auth'
 import 'firebase/storage'
 import { StaticArtwork, FirebaseArtwork, NO_ARTWORK } from './model/Artwork';
 import { Act, Show } from './util/types';
@@ -23,9 +23,9 @@ const db = fb.firestore()
 const auth = fb.auth()
 const storage = fb.storage()
 
-const convertActs = {
+export const convertActs = {
   toFirestore: (act: Act) => {
-    const data:any = {
+    const data:fb.firestore.DocumentData = {
       id: act.id,
       name: act.name,
       bio: act.bio,
@@ -40,6 +40,9 @@ const convertActs = {
     if (act.mcLink) {
       data.mcLink = act.mcLink;
     }
+    if (act.pageLink) {
+      data.pageLink = act.pageLink;
+    }
     return data;
   },
   fromFirestore: (data: any) => {
@@ -47,6 +50,7 @@ const convertActs = {
     act.bio = data.bio;
     act.comment = data.comment;
     act.mcLink = data.mcLink;
+    act.pageLink = data.pageLink;
 
     const img:string | undefined = data.img.url;
     if (img) {
@@ -89,7 +93,6 @@ const convertShows:fb.firestore.FirestoreDataConverter<Show> = {
     if (show.residency) {
       data.residency = show.residency;
     }
-    console.log(data);
     return data;
   },
   fromFirestore: (snap: fb.firestore.QueryDocumentSnapshot) => {

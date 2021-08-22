@@ -9,6 +9,7 @@ export interface Artwork {
     save(): Promise<Artwork>;
     update(file:File): Promise<Artwork>;
     download(): Promise<Blob> | undefined;
+    delete?() : Promise<any>;
 }
 
 class NoArtwork implements Artwork {
@@ -95,6 +96,10 @@ export class FirebaseArtwork implements Artwork {
             return axios.get(this._src, { responseType: 'blob' })
                 .then((res:AxiosResponse) => res.data as Blob)
         }
+    }
+
+    delete() {
+        return storage.ref(this.ref).delete()
     }
 }
 

@@ -83,29 +83,3 @@ class ContextualPromiseChainBuilder<C> {
         return new ContextualPromiseChain(this.ctx, Promise.resolve(inital));
     }
 }
-
-/*
-function addAndPrint(c, a) {
-    console.log(c, a);
-    return Promise.resolve(a + c);
-}
-
-new ContextualPromiseChain(Promise.resolve(2))
-    .then(addAndPrint)
-    .then(addAndPrint)
-    .then(addAndPrint)
-    .then((a, b) => addAndPrint(a, b).then(() => "YOLO"))
-    .then(addAndPrint);
-    .then(addAndPrint);
-
-
-
-/*
-
-
-someFun()       --> return ctx
-    .then((ctx) => y)
-    .then((ctx, y) => z)
-    .then((ctx, z) => y)
-
-*/

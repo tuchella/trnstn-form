@@ -1,12 +1,17 @@
-import { showsCollection, infoDoc, storage, confidentialCollection, isSignedIn } from '../firebase';
-import { Act, Show } from './types';
+import * as fb from '@/firebase';
+import { Act, Show } from '@/util/types';
 import uuid from './uuid';
+
+import firebase from 'firebase/app'
+import 'firebase/firestore'
+const FieldValue = firebase.firestore.FieldValue;
+
 
 const REDACTED_MAIL = /^.\*\*\*.@.\*\*.\*\*.$/;
 const REDACTED_PHONE = /^.\*\*\*.$/;
   
 async function saveShow(show:Show) {
-    const files = storage.ref();
+    const files = fb.storage.ref();
 
     if (!show.id) {
         show.id = show.title.replaceAll(' ','').substring(0,4).toUpperCase() + uuid().substring(0,13).replace('-','');
@@ -34,39 +39,57 @@ async function saveShow(show:Show) {
             show.contact = redacted;
         }
         const confidential = { contact: fullContact };
-        await confidentialCollection.doc(show.id).set(confidential);
+        await fb.confidentialCollection.doc(show.id).set(confidential);
     }
 
     for (const act of show.acts) {
         act.img = await act.img.save();
     }
-    /*
-    show.acts.filter(act => act.img.file).forEach(async (act) => {
-        if (!act.img.url) {
-            act.img.url = "images/" + uuid() + "-" + act.img.file.name;
-        }
-        await files
-            .child(act.img.url)
-            .put(act.img.file)
-            .then(() => (act.img.file = null));
-    });
-    */
-    return await showsCollection.doc(show.id).set(show);
+    return await fb.showsCollection.doc(show.id).set(show);
 }
 
-async function saveAct(show: Show, act: Act) {
-    const s = await getShow(show.id);
+function getFieldValue(o:any, field:string): any {
+    let val;
+    if (field.indexOf('.') > 0) {
+        val = o;
+        for(const f of field.split(".")) {
+            val = val[f];
+            if (val === undefined || val === null) {
+                break;
+            }
+        }
+    } else {
+        val = o[field];
+    }
+    if (val === undefined) {
+        val = FieldValue.delete();
+    }
+    return val;
+}
+
+async function saveAct(show: Show, act: Act, ...fields: string[]) {
+    const data:any = {}
+    act.img = await act.img.save();
+    if (fields.length > 0) {
+        fields.forEach(f => data["acts." + act.id + "." + f] = getFieldValue(act, f));
+    } else {
+        data["acts." + act.id] = fb.convertActs.toFirestore(act);
+        data["acts." + act.id].index = show.acts.indexOf(act);
+    }
+    return fb.showsCollection.doc(show.id).update(data);
+    /*
     const i = s.acts.findIndex(a => a.id == act.id);
     if (i > 0) {
         s.acts[i] = act;
         act.img = await act.img.save();
-        await showsCollection.doc(s.id).update({
+        await fb.showsCollection.doc(s.id).update({
             acts: s.acts
         })
         return s;
     } else {
         throw new Error(`Act ${act.id} not valid`);
     }
+    */
 }
 
 function getShow(id?:string): Promise<Show> {
@@ -74,7 +97,7 @@ function getShow(id?:string): Promise<Show> {
         return Promise.reject("Can not find show without id");
     }
 
-    return showsCollection
+    return fb.showsCollection
             .doc(id)
             .get()
             .then(doc => {
@@ -84,9 +107,8 @@ function getShow(id?:string): Promise<Show> {
                 return doc.data()!;
             })
             .then(show => {
-                console.log(show);
-                if (show && isSignedIn()) {
-                    confidentialCollection.doc(show.id).get().then(c => {
+                if (show && fb.isSignedIn()) {
+                    fb.confidentialCollection.doc(show.id).get().then(c => {
                         if (c.exists) {
                             const contact = c.data()!['contact'];
                             show.contact = contact || show.contact;
@@ -99,7 +121,7 @@ function getShow(id?:string): Promise<Show> {
 
 function getInfo() {
     return new Promise((resolve, reject) => {
-        infoDoc.get()
+        fb.infoDoc.get()
             .then(doc => {
                 if (doc.exists) {
                     const info:any = doc.data()
@@ -114,7 +136,7 @@ function getInfo() {
 }
 
 function saveInfo(text:string) {
-    return infoDoc.update({
+    return fb.infoDoc.update({
         text: text.replaceAll("\n", "\\n")
     })
 }

@@ -4,7 +4,7 @@
         <v-col cols="12" class="d-flex flex-wrap  justify-end ">
           <div class="text-h4 flex-grow-1 d-flex align-center">
             <span>{{ show.title }}
-                <span v-if="show.acts.size > 1">/w {{ value.name }}</span>
+                <span v-if="show.acts.length > 1">/w {{ act.name }}</span>
             </span>
           </div>
           <v-btn class="ma-2" color="secondary" :disabled="!completed" :href="page" target="_blank">visit</v-btn>
@@ -35,11 +35,11 @@ export default class PublishToCmsStep extends Vue {
   ok: boolean = true;
   progress: number = 0.0;
   page: string = "";
-  @Prop({ required: true }) value!: Act;
+  @Prop({ required: true }) act!: Act;
   @Prop({ required: true }) show!: Show;
 
   publish() {
-    kirby.publishShow(this.show, this.value, this.updateProgress)
+    kirby.publishShow(this.show, this.act, this.updateProgress)
       .then(page => this.page = page);
   }
 

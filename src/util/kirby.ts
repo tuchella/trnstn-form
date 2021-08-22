@@ -3,7 +3,8 @@ import { auth, storage } from '../firebase';
 import { stringToDate, dateToString } from './date';
 import ContextualPromiseChain from '../model/ContextualPromiseChain';
 import { Act, ScheduledShow, ScheduledShowImpl, Show, User } from './types';
-import { Artwork } from '@/model/Artwork';
+import { Artwork, StaticArtwork } from '@/model/Artwork';
+import db from './db';
 
 
 declare global {
@@ -83,11 +84,31 @@ function getScheduledShows(): Promise<Array<ScheduledShow>> {
 type PageId = string;
 type ProgressListener = (a:number) => void;
 
+interface ImageUploadResult {
+    url: string;
+    filename: string;
+}
+
 function publishShow(show: Show, act: Act, 
         progressCallback:ProgressListener = (_) => {}):Promise<PageId> {
 
-    const listener = new ProgressListenerWrapper(progressCallback, 5);
+    async function updatePageUrlInFirebase(page:PageId, url:string): Promise<string> {
+        act.pageLink = url;
+        await db.saveAct(show, act, "pageLink");
+        return url;
+    }
+    async function updateImageUrlInFirebase(page:PageId, data:ImageUploadResult): Promise<string> {
+        const oldImg = act.img; 
+        act.img = new StaticArtwork(data.url);
+        await db.saveAct(show, act, "img.url");
+        if (oldImg.delete) {
+            await oldImg.delete();
+        }
+        return data.filename;
+    }
 
+    const listener = new ProgressListenerWrapper(progressCallback, 7);
+            
     return ContextualPromiseChain
         .withContextProvidedBy(createEpisodePage(show, act))
         .andInitialValue(act.img)
@@ -96,10 +117,14 @@ function publishShow(show: Show, act: Act,
         .then(listener.notify(2))
         .then(uploadImageToCMS)
         .then(listener.notify(3))
-        .then(updateEpisodeImage)
+        .then(updateImageUrlInFirebase)
         .then(listener.notify(4))
-        .then(setStatusToListed)
+        .then(updateEpisodeImage)
         .then(listener.notify(5))
+        .then(setStatusToListed)
+        .then(listener.notify(6))
+        .then(updatePageUrlInFirebase)
+        .then(listener.notify(7))
         .then((ctx:PageId, res:any) => {
             console.log(ctx, res);
             return Promise.resolve(res);
@@ -157,19 +182,32 @@ function createEpisodePage(show: Show, act: Act): Promise<PageId> {
     }).then(resp => resp.data.data.id.replaceAll('/','+'));
 }
 
-function downloadImage(_:any, img?:Artwork) {
-    return img?.download() || Promise.reject("No artwork found");
+function downloadImage(_:any, img:Artwork): Promise<Blob | string | undefined> {
+    return img.download() || Promise.resolve(img.url);
 }
 
-function uploadImageToCMS(page:PageId, img:Blob) {
-    const formData = new FormData();
-    formData.append('file', img);
-    return kirxios({
-        method: "post",
-        url: `/api/pages/${page}/files`,
-        data: formData,
-        headers: { "Content-Type": "multipart/form-data" },
-    }).then(res => res.data.data.filename)
+async function uploadImageToCMS(page:PageId, img:Blob | string | undefined):Promise<ImageUploadResult> {
+    if (img instanceof Blob) {
+        const formData = new FormData();
+        formData.append('file', img);
+        const res = await kirxios({
+            method: "post",
+            url: `/api/pages/${page}/files`,
+            data: formData,
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+        return res.data.data;
+    } else {
+        // image might already be uploaded...
+        let filename = img || "";
+        if (filename.lastIndexOf('/') >= 0) {
+            filename = filename.substring(filename.lastIndexOf('/') + 1);
+        }
+        return {
+            url: img || "",
+            filename: filename
+        } 
+    }
 }
 
 function updateEpisodeImage(page:PageId, filename:string) {
@@ -178,11 +216,11 @@ function updateEpisodeImage(page:PageId, filename:string) {
     });
 }
 
-function setStatusToListed(page:PageId, res:AxiosResponse) {
-    console.log(res);
-    return kirxios.patch(`/api/pages/${page}/status`, {
+async function setStatusToListed(page:PageId, res:AxiosResponse) {
+    const r = await kirxios.patch(`/api/pages/${page}/status`, {
         status: 'listed'
-    }).then(r => r.data.data.url);
+    })
+    return r.data.data.url;
 }
 
 function slugify(str: string): string {

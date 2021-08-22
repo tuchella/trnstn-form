@@ -38,7 +38,6 @@ export default class MixcloudAuthStep extends Vue {
     if (localStorage.mixcloudAccessToken) {
       const url = `https://api.mixcloud.com/me/?access_token=${localStorage.mixcloudAccessToken}`;
       const response = await fetch(url);
-      console.log(response);
       if (response.ok) {
         this.$emit("auth-success");
         return;

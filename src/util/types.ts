@@ -23,6 +23,7 @@ export class Act {
     img: Artwork = NO_ARTWORK;
     comment: string = "";
     mcLink?: string;
+    pageLink?: string;
 
     constructor(id:UUID, name:string) {
         this.id = id;

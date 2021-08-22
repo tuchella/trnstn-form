@@ -58,6 +58,7 @@ import Maybe from "@/model/Maybe";
 import axios from "axios";
 import { getFileName } from "@/model/Artwork";
 import FakeProgress from "@/util/FakeProgress";
+import db from "@/util/db";
 
 @Component({
   components: {
@@ -119,6 +120,7 @@ export default class MixcloudUploadStep extends Vue {
         fakeProgress.stop();
         if (res.data.result.success) {
           act.mcLink = "https://mixcloud.com" + res.data.result.key;
+          await db.saveAct(show, act, "mcLink");
           this.file.value = undefined;
         } else {
           this.errorMessage = "upload failed";
