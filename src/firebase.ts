@@ -31,9 +31,12 @@ const convertActs = {
       bio: act.bio,
       comment: act.comment,
       img: {
-        url: act.img.url 
+         
       }
     };
+    if (act.img.url) {
+      data.img.url = act.img.url;
+    }
     if (act.mcLink) {
       data.mcLink = act.mcLink;
     }
@@ -45,7 +48,7 @@ const convertActs = {
     act.comment = data.comment;
     act.mcLink = data.mcLink;
 
-    const img:string = data.img.url;
+    const img:string | undefined = data.img.url;
     if (img) {
       if (img.startsWith("http://") || img.startsWith("https://")) {
         act.img = new StaticArtwork(img); 

@@ -39,7 +39,7 @@
       </v-col>
     </v-row>
     <v-row>
-      <v-col cols="12">
+      <v-col cols="12" class="mb-10">
         <v-alert type="error" v-if="errorMessage">
           {{ errorMessage }}
         </v-alert>
