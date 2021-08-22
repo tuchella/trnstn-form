@@ -21,26 +21,33 @@ const kirxios = axios.create({
 
 const SHOW_CACHE: Array<ScheduledShow> = [];
 
+let user:User | undefined = undefined;
 
 function getUser(): Promise<User> {
+    if (user) {
+        return Promise.resolve(user);
+    }
+
     return kirxios.get("/api/auth?select=content,name,username")
       .then(response => response.data.data)
       .then(response => {
-        const user = response;
         // do something with the page data
-        return auth.signInWithEmailAndPassword(user.username, user.content.firebasekey).then(fb => {
+        return auth.signInWithEmailAndPassword(response.username, response.content.firebasekey).then(fb => {
             const name = fb.user?.displayName || fb.user?.email;
-            return name ? new User(name, true) : new User("Anonymous", false);
+            user = name ? new User(name, true) : new User("Anonymous", false);
+            return user;
         });
       })
       .catch(error => {
         if (error.response && error.response.status == 403) {
             // user is simply not logged in, that's ok.
-            return new User("Anonymous", false);
+            user = new User("Anonymous", false);
+        } else {
+            console.error(error);
+            // something went wrong
+            user = new User("ERROR", false);
         }
-        // something went wrong
-        console.error(error);
-        return new User("ERROR", false);
+        return user;
       });
 }
 
