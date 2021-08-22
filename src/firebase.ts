@@ -42,7 +42,7 @@ const convertActs = {
     }
     return data;
   },
-  fromFirestore: (data: fb.firestore.DocumentData) => {
+  fromFirestore: (data: any) => {
     const act = new Act(data.id, data.name);
     act.bio = data.bio;
     act.comment = data.comment;
@@ -71,10 +71,14 @@ const convertShows:fb.firestore.FirestoreDataConverter<Show> = {
       date: show.date,
       contact: show.contact,
       comment: show.comment,
-      acts: show.acts.map(convertActs.toFirestore),
+      acts: {},
       tags: show.tags,
       createdAt: show.createdAt || Date.now(),
     }
+    show.acts.map(convertActs.toFirestore).forEach((a,i) => {
+      data.acts[a.id] = a;
+      data.acts[a.id].index = i;
+    });
     
     if (show.timeStart) {
       data.timeStart = show.timeStart;
@@ -99,10 +103,14 @@ const convertShows:fb.firestore.FirestoreDataConverter<Show> = {
     show.date = data.date;
     show.contact = data.contact;
     show.comment = data.comment;
-    show.acts = data.acts.map(convertActs.fromFirestore);
+    show.acts = Object.values(data.acts)
+      .sort((a:any,b:any) => a.index - b.index)
+      .map(convertActs.fromFirestore);
     show.tags = data.tags;
     show.residency = data.residency;
     show.createdAt = data.createdAt;
+    
+
     return show;
   }
 };
