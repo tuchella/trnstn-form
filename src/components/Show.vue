@@ -9,7 +9,7 @@
               class="large-input"
               height="61px"
               style="font-size:50px"
-              :readonly="show.id"
+              :readonly="show.id != undefined"
               :items="residencies"
               item-text="title"
               item-value="title"
