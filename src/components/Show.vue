@@ -3,7 +3,7 @@
     <v-form ref="form" lazy-validation>
       <v-container style="max-width: 900px">
         <!-- SHOW TITLE -->
-        <v-row v-if="isSignedIn">
+        <v-row>
           <v-col cols="12">
             <v-autocomplete
               class="large-input"
@@ -33,14 +33,16 @@
           -->
         </v-row>
         <!-- DATE/TIME INPUTS -->
-        <v-row v-if="isSignedIn">
+        <v-row >
           <v-col cols="12" sm="8">
-            <DatePicker v-model="show.date" />
+            <DatePicker v-model="show.date" :readonly="true" />
           </v-col>
           <v-col cols="6" sm="2">
             <v-text-field
               label="Start"
               type="time"
+              readonly
+              disabled
               v-model="show.timeStart"
             ></v-text-field>
           </v-col>
@@ -48,6 +50,8 @@
             <v-text-field
               label="End"
               type="time"
+              readonly
+              disabled
               v-model="show.timeEnd"
             ></v-text-field>
           </v-col>
@@ -60,7 +64,6 @@
         </v-row>
 
         <!-- VIEW FOR NON LOGGED IN USERS -->
-        <ShowHeader :show="show" v-if="!isSignedIn" />
         <v-row v-if="!isSignedIn">
           <v-col cols="12">
             <InfoBox v-model="info" />

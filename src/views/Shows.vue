@@ -14,11 +14,7 @@
         <v-btn large color="primary" class="float-right ml-4 mb-4" @click="onFilter" >SEARCH</v-btn>
       </v-col>
       <v-col cols="12" lg="4" style="display:flex; justify-content: flex-end; align-items: center;">
-        <v-btn large color="primary" class="mb-4 mx-4" to="/shows/create" style="min-width:25%">
-          IMPORT 
-          <v-icon right>mdi-calendar-refresh</v-icon>
-        </v-btn>
-        <v-btn large color="primary" class="mb-4" to="/shows/create" style="min-width:25%">
+        <v-btn large color="primary" class="mb-4" to="/" style="min-width:25%">
           ADD NEW
           <v-icon right>mdi-page-next-outline</v-icon>
         </v-btn>

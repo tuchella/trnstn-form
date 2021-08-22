@@ -5,8 +5,7 @@ import { auth } from '../firebase'
 Vue.use(VueRouter)
 
 const routes = [
-  { path: '/', redirect: '/shows' 
-  },{
+  {
     path: '/shows',
     name: 'ShowList',    
     component: () => import(/* webpackChunkName: "about" */ '../views/Shows.vue'),
@@ -14,7 +13,7 @@ const routes = [
       requiresAuth: true
     }
   },{
-    path: '/shows/create',
+    path: '/',
     name: 'Home',
     component: () => import(/* webpackChunkName: "about" */ '../views/ShowForm.vue'),
     meta: {

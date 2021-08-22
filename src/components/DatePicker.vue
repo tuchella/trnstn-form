@@ -6,6 +6,7 @@
       :close-on-content-click="false"
       transition="scale-transition"
       offset-y
+      :disabled="readonly"
       min-width="auto"
     >
       <template v-slot:activator="{ on, attrs }">
@@ -14,6 +15,7 @@
           label="Date"
           append-icon="mdi-calendar"
           readonly
+          :disabled="readonly"
           v-bind="attrs"
           v-on="on"
           @input="updateValue($event)"
@@ -35,7 +37,13 @@
 import { dateWithYearOffset, dateToString, stringToDate } from "../util/date"
 
 export default {
-    props: ["value"],
+    props: {
+      value: Date, 
+      readonly: {
+        type: Boolean,
+        default: false,
+      }
+    },
     data: () => ({
       activePicker: null,
       menu: false,
