@@ -85,7 +85,7 @@ export default class MixcloudUploadStep extends Vue {
   async upload() {
     const url =
       "https://api.mixcloud.com/upload/?access_token=" +
-      localStorage.mixcloudAccessToken;
+      localStorage.getItem("mixcloudAccessToken");
     const act = this.act;
     const show = this.show;
     if (this.file.present()) {

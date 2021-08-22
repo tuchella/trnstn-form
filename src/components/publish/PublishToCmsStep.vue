@@ -8,17 +8,12 @@
             </span>
           </div>
           <v-btn class="ma-2" color="secondary" :disabled="!completed" :href="page" target="_blank">visit</v-btn>
-          <v-btn class="ma-2" color="primary" @click="publish" :disabled="progress > 0">publish</v-btn>
+          <v-btn class="ma-2" color="primary" @click="publish" :disabled="progress > 0 || completed">publish</v-btn>
         </v-col>
       </v-row>
       <v-row>
         <v-col cols="12">
           <v-progress-linear v-model="progress"></v-progress-linear>
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col cols="12">
-          <span v-if="completed">{{ page }}</span>
         </v-col>
       </v-row>
   </div>
@@ -34,17 +29,20 @@ import { Show, Act } from "@/util/types";
 export default class PublishToCmsStep extends Vue {
   ok: boolean = true;
   progress: number = 0.0;
-  page: string = "";
+  
   @Prop({ required: true }) act!: Act;
   @Prop({ required: true }) show!: Show;
 
   publish() {
-    kirby.publishShow(this.show, this.act, this.updateProgress)
-      .then(page => this.page = page);
+    kirby.publishShow(this.show, this.act, this.updateProgress);
   }
 
   get completed(): boolean {
-    return this.progress >= 100;
+    return this.progress >= 100 || this.act.pageLink != undefined;
+  }
+
+  get page(): string {
+    return this.act.pageLink || "";
   }
 
   updateProgress(p:number) {
