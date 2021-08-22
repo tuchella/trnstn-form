@@ -130,7 +130,7 @@ export class UploadedArtwork implements Artwork {
     }
 
     get url(): string {
-        throw "get URL should not be called on an Uploaded Artwork :(";
+        return this.file.name;
     }
 
     async save() {
@@ -143,5 +143,17 @@ export class UploadedArtwork implements Artwork {
     }
     download() {
         return Promise.resolve(this.file);
+    }
+}
+
+export function getFileName(a:Artwork):string {
+    if (!a.url) {
+        return ""; 
+    }
+    const url = a.url;
+    if (url.lastIndexOf('/') >= 0) {
+        return url.substring(url.lastIndexOf('/') + 1);
+    } else {
+        return url;
     }
 }

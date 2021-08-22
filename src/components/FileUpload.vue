@@ -11,6 +11,7 @@
         label="audio file"
         prepend-icon=""
         prepend-inner-icon="mdi-file"
+        hide-details="true"
       >
       </v-file-input>
     </v-col>
