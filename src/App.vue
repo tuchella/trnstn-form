@@ -4,14 +4,14 @@
       app
       color="white"
       height="auto"
-      style="border-bottom: 1px solid black !important; height: auto !important;"
+      style="border-bottom: 1px solid black !important; height: 44px !important;"
       
     >
 
       <div class="d-flex align-center" v-if="$vuetify.breakpoint.smAndUp" >
               
 
-              <v-breadcrumbs :items="breadcrumbs" style="padding-bottom:0; padding-top: 0; max-height:22px; overflow: hidden;">
+              <v-breadcrumbs :items="breadcrumbs" style="padding-bottom:0; padding-top: 0; max-height:22px; overflow: hidden; margin-top:auto">
     <template v-slot:item="{ item }">
       <v-breadcrumbs-item
         :to="item.to"
@@ -61,18 +61,17 @@
 
       <v-spacer></v-spacer>
       <div v-if="$vuetify.breakpoint.smAndUp"> 
-      <v-btn text @click="logout" v-if="showSignoutBtn">sign out</v-btn>
 
       <v-btn
-        href="https://trnstnradio.com/"
-        target="_blank"
+        href="/panel"
         text
+        v-if="signedIn"
       >
-        <span class="mr-2">Website</span>
+        <span class="mr-2">Panel</span>
         <v-icon>mdi-open-in-new</v-icon>
       </v-btn>
       </div>
-      <v-app-bar-nav-icon v-else @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon v-else-if="signedIn" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
 
     </v-app-bar>
 
@@ -90,14 +89,10 @@
 
         <v-spacer style="height: 1px; width:100%; border-top: 1px solid #DDD; margin: 1em 0;"></v-spacer>
 
-          <v-list-item v-if="showSignoutBtn" @click="logout">
-            <v-list-item-title>SIGN OUT</v-list-item-title>
-          </v-list-item>
           <v-list-item 
-            href="https://trnstnradio.com/"
-            target="_blank">
+            href="/panel">
             <v-list-item-title>
-              <span class="mr-2">Website</span>
+              <span class="mr-2">Panel</span>
               <v-icon small>mdi-open-in-new</v-icon>
             </v-list-item-title>
           </v-list-item>
@@ -139,7 +134,7 @@ export default {
     }
   },
   data: () => ({
-    showSignoutBtn: isSignedIn(),
+    signedIn: isSignedIn(),
     drawer: false,
   }),
   created() {
@@ -148,7 +143,7 @@ export default {
   methods: {
     authChanged() {
       const authState = isSignedIn();
-      this.showSignoutBtn = authState;
+      this.signedIn = authState;
     },
     updateBreadcrumbs(/*bc*/) {
       // do nothing I guess...
@@ -172,6 +167,9 @@ export default {
   border-top: 1px solid black;
   background-color: white;
   padding-top:2em;
+}
+.v-toolbar__content {
+  height: 44px;
 }
 .container {
   max-width: 900px;

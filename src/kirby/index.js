@@ -15,7 +15,7 @@ panel.plugin("trnstn/trnstnform'", {
             </k-view>
           `,
             mounted() {
-                window.location.href = "/form";
+                window.location.href = "/form/shows";
             }
         }
       }
