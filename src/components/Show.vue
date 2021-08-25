@@ -157,21 +157,19 @@
 import ActForm from "./ActForm.vue";
 import DatePicker from "./DatePicker.vue";
 import InfoBox from "./InfoBox.vue";
-import ShowHeader from "./ShowHeader.vue";
-
+import ShareLink from "./ShareLink.vue";
 
 import { isSignedIn } from "../firebase";
 import db from "../util/db";
 import uuid from "../util/uuid";
 import { tags } from "../util/enums";
-import ShareLink from "./ShareLink.vue";
 import kirby from "../util/kirby";
 import * as t from '@/util/types';
 
 
 export default {
   props: ["id", "actId"],
-  components: { ActForm, DatePicker, InfoBox, ShowHeader, ShareLink },
+  components: { ActForm, DatePicker, InfoBox, ShareLink },
   name: "Show",
   computed: {
     isSignedIn() {
