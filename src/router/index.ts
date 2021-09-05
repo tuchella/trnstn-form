@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import { auth } from '../firebase'
+import { auth } from '@/util/firebase/firebase'
 
 Vue.use(VueRouter)
 
@@ -8,47 +8,47 @@ const routes = [
   {
     path: '/shows',
     name: 'ShowList',    
-    component: () => import(/* webpackChunkName: "about" */ '../views/Shows.vue'),
+    component: () => import(/* webpackChunkName: "int" */ '../views/Shows.vue'),
     meta: {
       requiresAuth: true
     }
   },{
     path: '/',
     name: 'Home',
-    component: () => import(/* webpackChunkName: "about" */ '../views/ShowForm.vue'),
+    component: () => import(/* webpackChunkName: "pub" */ '../views/ShowForm.vue'),
     meta: {
       requiresAuth: false
     }
   },{
     path: '/shows/:id/upload/redirect/',
     name: 'UploadRedirect',    
-    component: () => import(/* webpackChunkName: "about" */ '../views/Upload.vue'),
+    component: () => import(/* webpackChunkName: "int" */ '../views/Upload.vue'),
     meta: {
       requiresAuth: true
     }
   },{
     path: '/shows/:id/upload/',
     name: 'Upload',    
-    component: () => import(/* webpackChunkName: "about" */ '../views/Upload.vue'),
+    component: () => import(/* webpackChunkName: "int" */ '../views/Upload.vue'),
     meta: {
       requiresAuth: true
     }
   },{
     path: '/shows/:showId/:actId/',
     name: 'Act',    
-    component: () => import(/* webpackChunkName: "about" */ '../views/ActFormView.vue'),
+    component: () => import(/* webpackChunkName: "act" */ '../views/ActFormView.vue'),
   },{
     path: '/shows/:id/',
     name: 'Show',    
-    component: () => import(/* webpackChunkName: "about" */ '../views/ShowForm.vue'),
+    component: () => import(/* webpackChunkName: "pub" */ '../views/ShowForm.vue'),
   },{
     path: '/login',
     name: 'Login',
-    component: () => import(/* webpackChunkName: "about" */ '../views/Login.vue')
+    component: () => import(/* webpackChunkName: "int" */ '../views/Login.vue')
   },{
     path: '/thanks',
     name: 'ThankYou',    
-    component: () => import(/* webpackChunkName: "about" */ '../views/ThankYou.vue'),
+    component: () => import(/* webpackChunkName: "pub" */ '../views/ThankYou.vue'),
   }
 ]
 
@@ -61,7 +61,7 @@ const router = new VueRouter({
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(x => x.meta.requiresAuth)
 
-  if (requiresAuth && !auth.currentUser) {
+  if (requiresAuth && !auth.isSignedIn()) {
     next('/login')
   } else {
     next()

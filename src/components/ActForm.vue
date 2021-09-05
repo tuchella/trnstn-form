@@ -2,14 +2,15 @@
   <div>
     <v-row>
       <v-col cols="12" sm="4">
-        <ArtworkUpload v-model="value" />
+        <ArtworkUpload v-model="value" class="mt-2" />
         <ShareLink v-model="link" v-if="isSignedIn && false" />
       </v-col>
       <v-col cols="12" sm="8">
         <!-- NAME -->
         <v-text-field
-          label="Name"
+          label="Name *"
           v-model="value.name"
+          :rules="requiredField"
           @input="$emit('name-changed')"
         >
           <template v-slot:append-outer v-if="removable">
@@ -31,15 +32,16 @@
           </template>
         </v-text-field>
         <!-- CITY -->
-        <v-text-field v-model="value.city" label="City" />
+        <v-text-field :rules="requiredField" v-model="value.city" label="City *" />
         <!-- LABEL -->
-        <v-text-field v-model="value.collective" label="Label/Collective" />
+        <v-text-field :rules="requiredField" v-model="value.collective" label="Label/Collective *" />
         <!-- PRONOUNS -->
-        <v-text-field v-model="value.pronouns" label="Pronouns" />
+        <v-text-field :rules="requiredField" v-model="value.pronouns" label="Pronouns *" />
         <!-- BIO -->
         <v-hover v-slot="{ hover }" open-delay="350">
           <v-textarea
             counter
+            :rules="requiredField" 
             label="Bio"
             v-model="value.bio"
             hint="Please write down here what you want us to communicate about
@@ -64,7 +66,7 @@
         <!-- SET LINK -->
         <v-hover v-slot="{ hover }" open-delay="350">
           <v-text-field
-            v-model="value.setLink"
+            v-model="value.scLink"
             label="Soundcloud/Mixcloud Set"
             hint="Please send a specific set from your guest that you would like us to share for the promotion."
             :persistent-hint="hover"
@@ -82,6 +84,12 @@
             :persistent-hint="hover"
           ></v-file-input>
         </v-hover>
+        <div>
+          <div class="v-text-field__details"><div class="v-messages theme--light"><div class="v-messages__wrapper">
+            see here the technical set up available in the container <a href="/" target="_blank">trnstn_setup.pdf</a> 
+          </div></div></div>
+          
+        </div>
         <!-- COMMENTS -->
         <v-textarea
           v-model="value.comment"
@@ -95,13 +103,18 @@
 </template>
 
 <script>
-import { auth } from "../firebase";
+import { auth } from "@/util/firebase/firebase";
 import ArtworkUpload from "./ArtworkUpload.vue";
 import ShareLink from "./ShareLink.vue";
 import { transportOptions } from "../util/enums";
 
 export default {
   props: ["value", "removable", "showComment", "showId"],
+  data: () => ({
+     requiredField: [
+        v => !!v || 'This field is required'
+      ],
+  }),
   components: {
     ArtworkUpload,
     ShareLink,
@@ -114,7 +127,7 @@ export default {
       return transportOptions;
     },
     isSignedIn() {
-      return auth.currentUser ? true : false;
+      return auth.isSignedIn();
     },
   },
 };

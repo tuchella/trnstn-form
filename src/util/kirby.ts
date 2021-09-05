@@ -1,11 +1,11 @@
 import axios, { AxiosResponse } from 'axios';
-import { auth, storage } from '../firebase';
+import { auth } from '@/util/firebase/firebase';
 import { stringToDate, dateToString } from './date';
 import ContextualPromiseChain from '../model/ContextualPromiseChain';
 import { Act, ScheduledShow, ScheduledShowImpl, Show, User } from './types';
 import { Artwork, StaticArtwork } from '@/model/Artwork';
 import db from './db';
-
+import router from '@/router/index'
 
 declare global {
     interface Window {
@@ -24,17 +24,20 @@ const SHOW_CACHE: Array<ScheduledShow> = [];
 let user:User | undefined = undefined;
 
 function getUser(): Promise<User> {
+    console.log("getUser()")
+    
     if (user) {
         return Promise.resolve(user);
     }
 
-    return kirxios.get("/api/auth?select=content,name,username")
+    return kirxios.get("/api/auth?select=content,name,username,email")
       .then(response => response.data.data)
       .then(response => {
         // do something with the page data
-        return auth.signInWithEmailAndPassword(response.username, response.content.firebasekey).then(fb => {
+        return auth.signIn(response.email, response.content.firebasekey).then(fb => {
             const name = fb.user?.displayName || fb.user?.email;
             user = name ? new User(name, true) : new User("Anonymous", false);
+            router.push('/shows')
             return user;
         });
       })

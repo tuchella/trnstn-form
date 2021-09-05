@@ -1,6 +1,4 @@
-import { showsOnlyCollection } from "@/firebase";
-import fb from 'firebase/app'
-import 'firebase/firestore'
+import { showsCollection } from "@/util/firebase/firebase";
 
 export class ShowSearchFilter {
   residency?: string;
@@ -20,35 +18,14 @@ export class ShowSearchResult {
   }
 }
 
-export function searchShows(filter: ShowSearchFilter, offset?: Date): Promise<Array<ShowSearchResult>> {
-  let query: fb.firestore.Query<fb.firestore.DocumentData> = showsOnlyCollection
-
-  if (filter.residency) {
-    query = query.where("title", "==", filter.residency);
-  }
-  if (filter.from) {
-    query = query.where("date", ">=", new Date(Date.parse(filter.from)));
-  }
-  if (filter.to) {
-    query = query.where("date", "<=", new Date(Date.parse(filter.to)));
-  }
-  query = query.orderBy("date", "desc")
-    .limit(10);
-
-  if (offset) {
-    query = query.startAfter(offset);
-  }
-  return query.get().then(data => {
-    const shows:Array<ShowSearchResult> = [];
-    data.forEach(s => {
-      const d = s.data();
-      shows.push(new ShowSearchResult(
-        d.id,
-        d.title,
-        d.date
-      ));
-    })
-    return shows;
-
-  });
+export async function searchShows(filter: ShowSearchFilter, offset?: Date): Promise<ShowSearchResult[]> {
+  const s = await showsCollection.query()
+    .whereMaybe("title", "==", filter.residency)
+    .whereDateMaybe("date", ">=", filter.from)
+    .whereDateMaybe("date", "<=", filter.to)
+    .orderBy("date", "desc")
+    .limit(10)
+    .offset(offset)
+    .get();
+  return s.map((d:any) => new ShowSearchResult(d.id, d.title, d.date));
 }

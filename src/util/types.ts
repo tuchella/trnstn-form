@@ -21,6 +21,11 @@ export class Act {
     name: string;
     bio: string = "";
     img: Artwork = NO_ARTWORK;
+    city: string = "";
+    collective: string = "";
+    transport: string = "";
+    pronouns: string = "";
+    scLink: string = "";
     comment: string = "";
     mcLink?: string;
     pageLink?: string;

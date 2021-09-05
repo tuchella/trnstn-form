@@ -1,8 +1,9 @@
+/*
 @font-face {
     font-family: 'AA-Gothic';
-    src: url('/aa.woff2') format('woff2'); /* Super Modern Browsers */
+    src: url('/aa.woff2') format('woff2');
   }
-
+*/
 html .v-application * {
-    font-family: AA-Gothic, Arial, Helvetica, sans-serif !important;
+    font-family: 'AA Gothic Regular', Arial, Helvetica, sans-serif !important;
 }

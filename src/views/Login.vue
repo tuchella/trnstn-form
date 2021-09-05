@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import { auth } from "../firebase";
+import { auth } from "@/util/firebase/firebase";
 import router from "../router/index";
 
 export default {
@@ -62,8 +62,7 @@ export default {
   },*/
   methods: {
     login() {
-      auth
-        .signInWithEmailAndPassword(this.username, this.password)
+      auth.signIn(this.username, this.password)
         .then(() => {
           router.push("/");
           this.$emit('auth-changed')

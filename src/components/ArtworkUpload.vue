@@ -1,42 +1,62 @@
 <template>
-  <div>
-    <v-img
-      style="cursor: pointer"
-      @dragover="dragover"
-      @drop="drop"
-      @click="imgClick"
-      :src="value.img.src"
-      :lazy-src="value.img.src"
-      aspect-ratio="1"
-      class="grey lighten-2"
+  <div :class="this.class">
+    <v-input :rules="mustHaveImage">
+      <v-img
+        style="cursor: pointer"
+        @dragover="dragover"
+        @drop="drop"
+        @click="imgClick"
+        :src="value.img.src"
+        :lazy-src="value.img.src"
+        aspect-ratio="1"
+        class="grey lighten-2"
+      >
+        <template v-slot:placeholder>
+          <v-row class="fill-height ma-0 pa-4" align="center" justify="center">
+            <p class="text-center">
+              Drop file here or click to upload your artwork *
+            </p>
+          </v-row>
+        </template>
+      </v-img>
+      <v-file-input
+        class="d-none"
+        accept="image/*"
+        v-model="file"
+        @change="updateFile"
+        ref="upload"
+      ></v-file-input>
+    </v-input>
+    <v-btn
+      block
+      class="mt-2"
+      color="primary"
+      outlined
+      :href="value.img.src"
+      download
+      target="_blank"
+      v-if="isDownloadable"
     >
-      <template v-slot:placeholder>
-        <v-row class="fill-height ma-0 pa-4" align="center" justify="center">
-          <p class="text-center">
-            Drop file here or click to upload your artwork
-          </p>
-        </v-row>
-      </template>
-    </v-img>
-    <v-file-input
-      class="d-none"
-      accept="image/*"
-      v-model="file"
-      @change="updateFile"
-      ref="upload"
-    ></v-file-input>
+      Download
+      <v-icon right dark>mdi-download-outline </v-icon>
+    </v-btn>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { Act } from "@/util/types";
+import { NO_ARTWORK } from "@/model/Artwork";
 
 @Component
 export default class ArtworkUpload extends Vue {
   content: string = "";
   file: File = new File([], "none");
+  mustHaveImage: any = [
+    () => this.value.img != NO_ARTWORK || "Please provide an artwork"
+  ];
   @Prop({ required: true }) value!: Act;
+  @Prop({ required: false }) class: string = "";
 
   imgClick(e: Event) {
     e.preventDefault();
@@ -60,55 +80,15 @@ export default class ArtworkUpload extends Vue {
       this.value.img.update(this.file).then((i) => (this.value.img = i));
     }
   }
+  get isDownloadable(): boolean {
+    console.log(this.value.img.src, this.value.img.src.startsWith("http"))
+    return this.value.img.src.startsWith("http");
+  }
 }
-/*
-const whatever = {
-  props: ["value"],
-  data: () => ({
-    content: "",
-  }),
-  methods: {
-    imgClick: function (e) {
-      e.preventDefault();
-      this.$refs.upload.$refs.input.click();
-    },
-    dragover(e) {
-      e.preventDefault();
-    },
-    drop: function (event) {
-      event.preventDefault();
-      this.value.file = event.dataTransfer.files[0];
-    },
-    loadImageFromFirebase: function () {
-      storage
-        .ref()
-        .child(this.value.url)
-        .getDownloadURL()
-        .then((url) => (this.content = url));
-    },
-  },
-  mounted() {
-    if (this.value.url) {
-      this.loadImageFromFirebase();
-    }
-  },
-  watch: {
-    "value.file": function (val) {
-      if (val) {
-        const self = this;
-        let reader = new FileReader();
-        reader.readAsDataURL(val);
-        reader.onloadend = function () {
-          self.content = reader.result;
-        };
-      } else if (!this.content && this.value.url) {
-        this.loadImageFromFirebase();
-      }
-    },
-  },
-};
-*/
 </script>
 
 <style>
+.v-input.v-input--has-state.error--text .v-image {
+  border: 2px solid red !important;
+}
 </style>

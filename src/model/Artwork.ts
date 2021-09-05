@@ -1,4 +1,4 @@
-import { storage } from "@/firebase";
+import { storage } from "@/util/firebase/firebase";
 import uuid from "@/util/uuid";
 import axios, { AxiosResponse } from "axios";
 //import axios, { AxiosResponse } from "axios";
@@ -63,7 +63,7 @@ export class FirebaseArtwork implements Artwork {
     }
 
     static async load(id:string): Promise<FirebaseArtwork> {
-        const url = await storage.ref(id).getDownloadURL();
+        const url = await storage.getDownloadURL(id);
         return new FirebaseArtwork(id, url);
     }
 
@@ -76,7 +76,7 @@ export class FirebaseArtwork implements Artwork {
 
     async save() {
         if (this.content) {
-            await storage.ref(this.ref).put(this.content);
+            await storage.put(this.ref, this.content);
             this.content = undefined;
         }
         return this;
@@ -99,7 +99,7 @@ export class FirebaseArtwork implements Artwork {
     }
 
     delete() {
-        return storage.ref(this.ref).delete()
+        return storage.delete(this.ref);
     }
 }
 
@@ -140,7 +140,7 @@ export class UploadedArtwork implements Artwork {
 
     async save() {
         const ref = "images/" + uuid() + "-" + this.file.name;
-        await storage.ref(ref).put(this.file)
+        await storage.put(ref, this.file)
         return FirebaseArtwork.load(ref);
     }
     async update(f:File) {

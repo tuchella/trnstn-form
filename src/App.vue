@@ -109,7 +109,7 @@
 
 <script>
 import Logo from './components/Logo';
-import { auth, isSignedIn } from './firebase' 
+import { auth } from '@/util/firebase/firebase' 
 import router from './router/index'
 import kirby from './util/kirby'
 
@@ -134,7 +134,7 @@ export default {
     }
   },
   data: () => ({
-    signedIn: isSignedIn(),
+    signedIn: auth.isSignedIn(),
     drawer: false,
   }),
   created() {
@@ -142,7 +142,7 @@ export default {
   },
   methods: {
     authChanged() {
-      const authState = isSignedIn();
+      const authState = auth.isSignedIn();
       this.signedIn = authState;
     },
     updateBreadcrumbs(/*bc*/) {

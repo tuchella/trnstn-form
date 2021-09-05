@@ -136,7 +136,7 @@ export default class MixcloudUploadStep extends Vue {
   }
 
   get completed(): boolean {
-    return this.progress >= 100;
+    return this.act.mcLink != undefined || this.progress >= 100;
   }
 }
 </script>

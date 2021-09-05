@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import { isSignedIn } from "../firebase";
+import { auth } from "@/util/firebase/firebase";
 import db from "../util/db";
 import ActForm from "../components/ActForm.vue";
 import ShowHeader from "../components/ShowHeader.vue";
@@ -62,7 +62,7 @@ export default {
       save() {
           this.overlay = true;
           db.saveAct(this.show, this.act).then(() => {
-            if (isSignedIn()) {
+            if (auth.isSignedIn()) {
               this.overlay = false;
             } else {
               this.$router.push({ name: 'ThankYou' });

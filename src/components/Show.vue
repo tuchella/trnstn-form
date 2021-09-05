@@ -13,6 +13,7 @@
               :items="residencies"
               item-text="title"
               item-value="title"
+              placeholder="select your show"
               required
               append-icon=""
               return-object
@@ -159,7 +160,7 @@ import DatePicker from "./DatePicker.vue";
 import InfoBox from "./InfoBox.vue";
 import ShareLink from "./ShareLink.vue";
 
-import { isSignedIn } from "../firebase";
+import { auth } from "@/util/firebase/firebase";
 import db from "../util/db";
 import uuid from "../util/uuid";
 import { tags } from "../util/enums";
@@ -173,7 +174,7 @@ export default {
   name: "Show",
   computed: {
     isSignedIn() {
-      return isSignedIn();
+      return auth.isSignedIn();
     },
     link() {
       const id = this.show.id;
@@ -185,9 +186,14 @@ export default {
       this.show.acts.push(new t.Act(uuid(), ""));
     },
     save() {
+      const valid = this.$refs.form.validate()
+      if (!valid) {
+        return;
+      }
+
       this.overlay = true;
       db.saveShow(this.show).then(() => {
-        if (isSignedIn()) {
+        if (this.isSignedIn) {
           this.overlay = false;
         } else {
           this.$router.push({ name: "ThankYou" });
@@ -228,6 +234,7 @@ export default {
         if (this.show.acts.length == 0) {
           this.addAct();
         }
+        console.log(this.show.date)
         this.residencies = [ this.show ];
         this.selectedShow = this.show;
         this.$store.navigation = [
