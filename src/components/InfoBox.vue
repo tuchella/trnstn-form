@@ -1,16 +1,20 @@
 <template>
+  <v-alert
+  color="blue"
+  outlined
+  type="info">
   <div :class="'form-info' + (hidden ? ' hidden' : '')">
-    <h2>RESIDENCY SHOWS INFOS</h2>
     <div class="form-info__text">
       <p v-html="text"></p>
     </div>
-    <a @click="hidden = true" class="form-info__less-link" href="#"
+    <a @click="hidden = true" class="blue--text form-info__less-link" href="#"
       >show less</a
     >
-    <a @click="hidden = false" class="form-info__more-link" href="#"
+    <a @click="hidden = false" class="blue--text form-info__more-link" href="#"
       >show more</a
     >
   </div>
+  </v-alert>
 </template>
 
 <script>
@@ -32,11 +36,8 @@ export default {
 
 <style>
 .form-info {
-  border: 1px solid black;
-  padding: 1em;
 }
 .form-info h2 {
-  text-align: center;
   margin-bottom: 1em;
   transition: margin-bottom 0.1s;
 }

@@ -9,7 +9,7 @@
         :src="value.img.src"
         :lazy-src="value.img.src"
         aspect-ratio="1"
-        class="grey lighten-2"
+        class="artwork-placeholder"
       >
         <template v-slot:placeholder>
           <v-row class="fill-height ma-0 pa-4" align="center" justify="center">
@@ -90,5 +90,12 @@ export default class ArtworkUpload extends Vue {
 <style>
 .v-input.v-input--has-state.error--text .v-image {
   border: 2px solid red !important;
+}
+.artwork-placeholder {
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+}
+.artwork-placeholder .text-center {
+  color: rgba(0, 0, 0, 0.6)
 }
 </style>

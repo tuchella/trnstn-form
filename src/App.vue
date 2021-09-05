@@ -180,4 +180,9 @@ header .v-btn::before {
 .theme--light.v-list-item--active:hover::before, .theme--light.v-list-item--active::before {
   background-color: transparent;
 }
+.v-application .v-label.error--text {
+      color: rgba(0, 0, 0, 0.6) !important;
+  caret-color: rgba(0, 0, 0, 0.6) !important;
+}
+
 </style>
