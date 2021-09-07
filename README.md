@@ -1,5 +1,7 @@
 # trnstn-form
 
+[![build](https://github.com/tuchella/trnstn-form/actions/workflows/node.yml/badge.svg)](https://github.com/tuchella/trnstn-form/actions/workflows/node.yml)
+
 ## Project setup
 ```
 npm install
