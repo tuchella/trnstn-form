@@ -1,5 +1,5 @@
 <template>
-  <div :class="this.class">
+  <div>
     <v-input :rules="mustHaveImage">
       <v-img
         style="cursor: pointer"
@@ -10,6 +10,8 @@
         :lazy-src="value.img.src"
         aspect-ratio="1"
         class="artwork-placeholder"
+        tabindex="0"
+        @keydown="imgKeydown"
       >
         <template v-slot:placeholder>
           <v-row class="fill-height ma-0 pa-4" align="center" justify="center">
@@ -56,13 +58,18 @@ export default class ArtworkUpload extends Vue {
     () => this.value.img != NO_ARTWORK || "Please provide an artwork"
   ];
   @Prop({ required: true }) value!: Act;
-  @Prop({ required: false }) class: string = "";
+//  @Prop({ required: false,  default: "" }) class!: string;
 
   imgClick(e: Event) {
     e.preventDefault();
     const input: any = (this.$refs.upload as Vue).$refs.input;
     if (input.click) {
       input.click();
+    }
+  }
+  imgKeydown(e: KeyboardEvent) {
+    if (e.key === "Enter") {
+      this.imgClick(e);
     }
   }
   dragover(e: Event) {

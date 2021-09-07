@@ -43,6 +43,8 @@
               label="Start"
               type="time"
               readonly
+              tabindex="-1"
+              aria-disabled="true"
               disabled
               v-model="show.timeStart"
             ></v-text-field>
@@ -51,6 +53,8 @@
             <v-text-field
               label="End"
               type="time"
+              aria-disabled
+              tabindex="-1"
               readonly
               disabled
               v-model="show.timeEnd"

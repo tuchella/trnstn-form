@@ -16,6 +16,7 @@
       <v-breadcrumbs-item
         :to="item.to"
         :exact="true"
+        tabindex="-1"
       >
         {{ item.text.toUpperCase() }}
       </v-breadcrumbs-item>
@@ -83,7 +84,7 @@
       <v-list
         nav
       >
-        <v-list-item v-for="item in breadcrumbs" v-bind:key="item.key" :to="item.to">
+        <v-list-item v-for="item in breadcrumbs" v-bind:key="item.key" :to="item.to" tabindex="-1">
           <v-list-item-title>{{ item.text.toUpperCase() }}</v-list-item-title>
         </v-list-item>
 

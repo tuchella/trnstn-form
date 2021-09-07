@@ -7,10 +7,10 @@
     <div class="form-info__text">
       <p v-html="text"></p>
     </div>
-    <a @click="hidden = true" class="blue--text form-info__less-link" href="#"
+    <a @click="hidden = true" class="blue--text form-info__less-link" href="#" tabindex="-1"
       >show less</a
     >
-    <a @click="hidden = false" class="blue--text form-info__more-link" href="#"
+    <a @click="hidden = false" class="blue--text form-info__more-link" href="#" tabindex="-1"
       >show more</a
     >
   </div>
@@ -35,16 +35,6 @@ export default {
 </script>
 
 <style>
-.form-info {
-}
-.form-info h2 {
-  margin-bottom: 1em;
-  transition: margin-bottom 0.1s;
-}
-.form-info.hidden h2 {
-  margin-bottom: 0;
-}
-
 .form-info__more-link,
 .form-info__less-link {
   width: 100%;
