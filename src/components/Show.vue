@@ -182,7 +182,7 @@ export default {
     },
     link() {
       const id = this.show.id;
-      return `${window.location.protocol}//${window.location.host}/shows/${id}`;
+      return `${window.location.protocol}//${window.location.host}/form/shows/${id}`;
     },
   },
   methods: {

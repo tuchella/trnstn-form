@@ -121,7 +121,7 @@ export default {
   },
   computed: {
     link() {
-      return `${window.location.protocol}//${window.location.host}/shows/${this.showId}/${this.value.id}`;
+      return `${window.location.protocol}//${window.location.host}/form/shows/${this.showId}/${this.value.id}`;
     },
     transportOptions() {
       return transportOptions;
