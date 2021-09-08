@@ -8,47 +8,47 @@ const routes = [
   {
     path: '/shows',
     name: 'ShowList',    
-    component: () => import(/* webpackChunkName: "int" */ '../views/Shows.vue'),
+    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/Shows.vue'),
     meta: {
       requiresAuth: true
     }
   },{
     path: '/',
     name: 'Home',
-    component: () => import(/* webpackChunkName: "pub" */ '../views/ShowForm.vue'),
+    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/ShowForm.vue'),
     meta: {
       requiresAuth: false
     }
   },{
     path: '/shows/:id/upload/redirect/',
     name: 'UploadRedirect',    
-    component: () => import(/* webpackChunkName: "int" */ '../views/Upload.vue'),
+    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/Upload.vue'),
     meta: {
       requiresAuth: true
     }
   },{
     path: '/shows/:id/upload/',
     name: 'Upload',    
-    component: () => import(/* webpackChunkName: "int" */ '../views/Upload.vue'),
+    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/Upload.vue'),
     meta: {
       requiresAuth: true
     }
   },{
     path: '/shows/:showId/:actId/',
     name: 'Act',    
-    component: () => import(/* webpackChunkName: "act" */ '../views/ActFormView.vue'),
+    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/ActFormView.vue'),
   },{
     path: '/shows/:id/',
     name: 'Show',    
-    component: () => import(/* webpackChunkName: "pub" */ '../views/ShowForm.vue'),
+    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/ShowForm.vue'),
   },{
     path: '/login',
     name: 'Login',
-    component: () => import(/* webpackChunkName: "int" */ '../views/Login.vue')
+    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/Login.vue')
   },{
     path: '/thanks',
     name: 'ThankYou',    
-    component: () => import(/* webpackChunkName: "pub" */ '../views/ThankYou.vue'),
+    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/ThankYou.vue'),
   }
 ]
 
