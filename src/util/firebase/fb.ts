@@ -1,4 +1,5 @@
-export { getFirestore, 
+export { 
+    getFirestore, 
     collection, query, where, orderBy, limit, startAfter,
     updateDoc,
     setDoc,
@@ -21,6 +22,10 @@ export {
     signInWithEmailAndPassword, 
     signOut,
     UserCredential,
-     } from "firebase/auth";
-export { getStorage, ref, uploadBytes, getDownloadURL, deleteObject 
+    } from "firebase/auth";
+export { 
+    getStorage, 
+    ref, uploadBytes, 
+    getDownloadURL, 
+    deleteObject 
     } from "firebase/storage";

@@ -13,8 +13,6 @@ interface QueryOrder {
   direction?: "asc" | "desc";
 }
 
-type CollectionName = "shows" | "confidential";
-
 class FirestoreQueryResult {
   private readonly snapshot:fb.QuerySnapshot<fb.DocumentData>;
 
