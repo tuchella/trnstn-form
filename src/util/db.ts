@@ -2,8 +2,6 @@ import { Act, Show } from '@/util/types';
 import uuid from './uuid';
 import { showsCollection, confidentialCollection, auth, infoDoc } from '@/util/firebase/firebase'; 
 
-
-
 const REDACTED_MAIL = /^.\*\*\*.@.\*\*.\*\*.$/;
 const REDACTED_PHONE = /^.\*\*\*.$/;
   
@@ -73,19 +71,19 @@ async function saveAct(show: Show, act: Act, ...fields: string[]) {
         data.get("acts." + act.id).index = show.acts.indexOf(act);
     }
     return showsCollection.update(show.id!, data);
-    /*
-    const i = s.acts.findIndex(a => a.id == act.id);
-    if (i > 0) {
-        s.acts[i] = act;
-        act.img = await act.img.save();
-        await fb.showsCollection.doc(s.id).update({
-            acts: s.acts
-        })
-        return s;
-    } else {
-        throw new Error(`Act ${act.id} not valid`);
+}
+
+async function deleteShow(id?:string) {
+    if (!id) {
+        return;
     }
-    */
+    const show = await showsCollection.get(id)
+    await showsCollection.delete(id);
+    for (const act of show.acts) {
+        if (act.img.delete) {
+            await act.img.delete();
+        }
+    }
 }
 
 async function getShow(id?:string): Promise<Show> {
@@ -116,6 +114,7 @@ function saveInfo(text:string) {
 export default {
     saveShow,
     saveAct,
+    deleteShow,
     getShow,
     getInfo,
     saveInfo,

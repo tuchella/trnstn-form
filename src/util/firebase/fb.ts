@@ -3,6 +3,7 @@ export {
     collection, query, where, orderBy, limit, startAfter,
     updateDoc,
     setDoc,
+    deleteDoc,
     deleteField, 
     UpdateData,
     getDocs, getDoc, doc, FirestoreDataConverter,

@@ -19,6 +19,11 @@ export default class Collection<T> {
     return doc.data();
   }
 
+  async delete(id: string) {
+    const doc = fb.doc(this.col, id);
+    return fb.deleteDoc(doc);
+  }
+
   async getMaybe(id: string): Promise<Maybe<T>> {
     const doc = await fb.getDoc(fb.doc(this.col, id));
     if (!doc.exists()) {

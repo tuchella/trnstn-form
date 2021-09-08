@@ -29,13 +29,16 @@
       </v-col>
     </v-row>
     <v-row v-for="item in shows" :key="item.id" class="border-bottom">
-      <v-col cols="12" sm="6" class="show-list-title">
-        {{ item.title }} #{{ item.number }}
+      <v-col cols="9" sm="6" class="show-list-title">
+        {{ item.title }}
+      </v-col>
+      <v-col cols="3" sm="2">
+        <span :class="['show-status', 'show-status--' + item.status]">{{ item.status }}</span>
       </v-col>
       <v-col cols="4" sm="2" >
         {{ item.date | formatDate }}
       </v-col>
-      <v-col colls="8" sm="4">
+      <v-col colls="8" sm="2">
         <div class="float-right">
           <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
@@ -43,16 +46,11 @@
           </template>
           <span>Edit/View</span>
         </v-tooltip>
-        
+
         <v-dialog
           v-model="dialog[item.id]"
           width="500"
         >
-          <!--
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn v-on="on" v-bind="attrs" icon><v-icon>mdi-delete-outline</v-icon></v-btn>
-          </template>
-          -->
           <template v-slot:activator="{ on: menu, attrs }">
             <v-tooltip bottom>
               <template v-slot:activator="{ on: tooltip }">
@@ -132,6 +130,8 @@ import { residencies } from "../util/enums";
 
 import { Component, Vue } from "vue-property-decorator";
 import { searchShows, ShowSearchFilter, ShowSearchResult } from "@/util/search";
+import db from "@/util/db";
+
 
 @Component
 export default class Shows extends Vue {
@@ -152,7 +152,9 @@ export default class Shows extends Vue {
   }
 
   remove(show:ShowSearchResult) {
-    this.shows = this.shows.filter(s => s.id != show.id);
+    db.deleteShow(show.id).then(() => {
+      this.shows = this.shows.filter(s => s.id != show.id);
+    })
   }
   onFilter() {
       this.loading = true;
@@ -207,7 +209,6 @@ const something = {
 </script>
 
 <style>
-
 .border-bottom {
   border-bottom: 1px solid black;
 }
@@ -217,6 +218,27 @@ const something = {
 .border-bottom:hover {
   background-color: #EEE;
 }
+
+.show-status {
+  border: 1px solid black;
+  font-size: 0.9em;
+  padding: 2px 4px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+.show-status.show-status--open {
+  border-color: lightgray;
+  color: lightgray;
+}
+.show-status.show-status--published {
+  border-color: darkgreen;
+  color: darkgreen;
+}
+.show-status.show-status--uploaded {
+  border-color: purple;
+  color: purple;
+}
+
 .show-list-title {
   font-size: 1.5em;
 }
