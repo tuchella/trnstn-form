@@ -1,11 +1,13 @@
 import { storage } from "@/util/firebase/firebase";
 import uuid from "@/util/uuid";
+import { basename } from 'path';
 import axios, { AxiosResponse } from "axios";
-//import axios, { AxiosResponse } from "axios";
 
 export interface Artwork {
     readonly src: string;
     readonly url?: string;
+    readonly name: string;
+
     save(): Promise<Artwork>;
     update(file:File): Promise<Artwork>;
     download(): Promise<Blob> | undefined;
@@ -13,7 +15,8 @@ export interface Artwork {
 }
 
 class NoArtwork implements Artwork {
-    readonly src:string = "";
+    readonly src  = "";
+    readonly name = "";
 
     save() { 
         return Promise.resolve(this)
@@ -37,6 +40,9 @@ export class StaticArtwork implements Artwork {
 
     get src() {
         return this.url;
+    }
+    get name() {
+        return basename(this.url)
     }
 
     save() {
@@ -62,9 +68,9 @@ export class FirebaseArtwork implements Artwork {
         this._src = url;
     }
 
-    static async load(id:string): Promise<FirebaseArtwork> {
-        const url = await storage.getDownloadURL(id);
-        return new FirebaseArtwork(id, url);
+    static async load(ref:string): Promise<FirebaseArtwork> {
+        const url = await storage.getDownloadURL(ref);
+        return new FirebaseArtwork(ref, url);
     }
 
     get src() {
@@ -72,6 +78,9 @@ export class FirebaseArtwork implements Artwork {
     }
     get url() {
         return this.ref;
+    }
+    get name() {
+        return basename(this.ref)
     }
 
     async save() {
@@ -82,11 +91,10 @@ export class FirebaseArtwork implements Artwork {
         return this;
     }
     async update(f:File) {
-        return UploadedArtwork.fromFile(f).then(a => {
-            this.content = f;
-            this._src = a.src;
-            return this;
-        })
+        const upload = await UploadedArtwork.fromFile(f);
+        this.content = f;
+        this._src = upload.src;
+        return this;
     }
     
     async download() {
@@ -135,6 +143,10 @@ export class UploadedArtwork implements Artwork {
     }
 
     get url(): string {
+        return this.file.name;
+    }
+    
+    get name() {
         return this.file.name;
     }
 

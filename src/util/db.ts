@@ -14,31 +14,34 @@ async function saveShow(show:Show) {
     }
     if (show.contact && !(show.contact.match(REDACTED_MAIL) || show.contact.match(REDACTED_PHONE))) {
         const fullContact = show.contact;
-        if (show.contact.indexOf('@') > -1) {
-            const redacted = 
-                show.contact.split('@')[0].slice(0,1) +
-                '***' +
-                show.contact.split('@')[0].slice(-1) +
-                '@' +
-                show.contact.split('@')[1].slice(0,1) +
-                '**.**'
-                show.contact.split('@')[1].slice(-1);
-            show.contact = redacted;
-        } else {
-            const redacted = 
-                show.contact.slice(0,1) +
-                '***' +
-                show.contact.slice(-1);
-            show.contact = redacted;
-        }
         const confidential = { contact: fullContact };
+        show.contact = redact(show.contact);
         await confidentialCollection.overwrite(show.id, confidential);
     }
-
     for (const act of show.acts) {
         act.img = await act.img.save();
     }
     return await showsCollection.overwrite(show.id, show);
+}
+
+function redact(v:string) {
+    if (v.indexOf('@') > -1) {
+        const redacted = 
+            v.split('@')[0].slice(0,1) +
+            '***' +
+            v.split('@')[0].slice(-1) +
+            '@' +
+            v.split('@')[1].slice(0,1) +
+            '**.**'
+            v.split('@')[1].slice(-1);
+        return redacted;
+    } else {
+        const redacted = 
+            v.slice(0,1) +
+            '***' +
+            v.slice(-1);
+        return redacted;
+    }
 }
 
 function getFieldValue(o:any, field:string): any {

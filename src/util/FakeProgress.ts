@@ -2,7 +2,7 @@ export default class FakeProgress {
     private readonly callback: (p: number) => void;
     private progress: number = 0;
     private readonly intervalTime;
-    private intervalId?: number;
+    private intervalId?: NodeJS.Timer;
 
     constructor(f: (p: number) => void, 
             interval: number = 1000,

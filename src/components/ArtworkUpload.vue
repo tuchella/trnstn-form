@@ -58,7 +58,6 @@ export default class ArtworkUpload extends Vue {
     () => this.value.img != NO_ARTWORK || "Please provide an artwork"
   ];
   @Prop({ required: true }) value!: Act;
-//  @Prop({ required: false,  default: "" }) class!: string;
 
   imgClick(e: Event) {
     e.preventDefault();
@@ -88,7 +87,6 @@ export default class ArtworkUpload extends Vue {
     }
   }
   get isDownloadable(): boolean {
-    console.log(this.value.img.src, this.value.img.src.startsWith("http"))
     return this.value.img.src.startsWith("http");
   }
 }

@@ -1,10 +1,11 @@
 import axios, { AxiosResponse } from 'axios';
+import { extname } from 'path';
 import { auth } from '@/util/firebase/firebase';
-import { stringToDate, dateToString } from './date';
-import ContextualPromiseChain from '../model/ContextualPromiseChain';
-import { Act, ScheduledShow, ScheduledShowImpl, Show, User } from './types';
+import { stringToDate, dateToString } from '@/util/date';
+import ContextualPromiseChain from '@/model/ContextualPromiseChain';
+import { Act, ScheduledShow, ScheduledShowImpl, Show, User } from '@/util/types';
 import { Artwork, StaticArtwork } from '@/model/Artwork';
-import db from './db';
+import db from '@/util/db';
 import router from '@/router/index'
 
 declare global {
@@ -99,28 +100,18 @@ interface ImageUploadResult {
     filename: string;
 }
 
-function publishShow(show: Show, act: Act, 
-        progressCallback:ProgressListener = (_) => {}):Promise<PageId> {
+interface DownloadedImage {
+    content: Blob | string;
+    filename: string;
+}
 
-    async function updatePageUrlInFirebase(page:PageId, url:string): Promise<string> {
-        act.pageLink = url;
-        await db.saveAct(show, act, "pageLink");
-        return url;
-    }
-    async function updateImageUrlInFirebase(page:PageId, data:ImageUploadResult): Promise<string> {
-        const oldImg = act.img; 
-        act.img = new StaticArtwork(data.url);
-        await db.saveAct(show, act, "img.url");
-        if (oldImg.delete) {
-            await oldImg.delete();
-        }
-        return data.filename;
-    }
+function publishShow(show:Show, act:Act, 
+        progressCallback:ProgressListener = (_) => {}):Promise<PageId> {
 
     const listener = new ProgressListenerWrapper(progressCallback, 7);
             
     return ContextualPromiseChain
-        .withContextProvidedBy(createEpisodePage(show, act))
+        .withContextProvidedBy(createEpisodePage())
         .andInitialValue(act.img)
         .then(listener.notify(1))
         .then(downloadImage)
@@ -140,6 +131,92 @@ function publishShow(show: Show, act: Act,
             return Promise.resolve(res);
         })
         .dropContext();
+
+    async function updatePageUrlInFirebase(page:PageId, url:string): Promise<string> {
+        act.pageLink = url;
+        await db.saveAct(show, act, "pageLink");
+        return url;
+    }
+    async function updateImageUrlInFirebase(page:PageId, data:ImageUploadResult): Promise<string> {
+        const oldImg = act.img; 
+        act.img = new StaticArtwork(data.url);
+        await db.saveAct(show, act, "img.url");
+        if (oldImg.delete) {
+            await oldImg.delete();
+        }
+        return data.filename;
+    }
+
+    async function createEpisodePage(): Promise<PageId> {
+        const title = show.acts.length > 1 ? show.title + " w/ " + act.name : show.title;
+        const parent = show.residency ? `shows+${show.residency}` : `guests`;
+        const slug = slugify(title);
+    
+        const resp = await kirxios.post(`/api/pages/${parent}/children`, {
+            slug: slug,
+            title: title,
+            template: 'episode',
+            content: {
+                title: title,
+                episode_visual: "none.jpg",
+                episode_date_enregistrement: dateToString(show.date) + " " + show.timeStart,
+                episode_description: act.bio,
+                episode_tags: show.tags.join(", "),
+                episode_url_mixcloud: act.mcLink || "https://trnstnradio.com",
+                episode_tracklist: ""
+            }
+        })
+        return resp.data.data.id.replaceAll('/','+');
+    }
+    
+    async function downloadImage(_:PageId, img:Artwork): Promise<DownloadedImage> {
+        const content = await img.download();
+        return {
+            content: content || img.url || "",
+            filename: img.name
+        }
+    }
+    
+    async function uploadImageToCMS(page:PageId, img:DownloadedImage):Promise<ImageUploadResult> {
+        if (img.content instanceof Blob) {
+            const ext = extname(img.filename);
+            const date = dateToString(show.date);
+            const filename =  `${date}_${page}_visual${ext}`
+            const formData = new FormData();
+            formData.append('file', img.content, filename);
+            const res = await kirxios({
+                method: "post",
+                url: `/api/pages/${page}/files`,
+                data: formData,
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            return res.data.data;
+        } else {
+            // image is probably already uploaded...
+            return {
+                url: img.content,
+                filename: img.filename
+            } 
+        }
+    }
+    
+    function updateEpisodeImage(page:PageId, filename:string) {
+        return kirxios.patch(`/api/pages/${page}`, {
+            episode_visual: filename
+        });
+    }
+    
+    async function setStatusToListed(page:PageId, res:AxiosResponse) {
+        const r = await kirxios.patch(`/api/pages/${page}/status`, {
+            status: 'listed'
+        })
+        return r.data.data.url;
+    }
+    
+    function slugify(str: string): string {
+        const r = Math.floor(Math.random()*1000);
+        return str.replaceAll(" ", "-").replace(/[^0-9-a-z]/gi, '').toLowerCase() + r;
+    }
 }
 
 class ProgressListenerWrapper {
@@ -165,78 +242,7 @@ class ProgressListenerWrapper {
 }
 
 
-/**
- * 
- * @param {Show} show 
- * @param {Act} act 
- * @returns {Promise<PageId>} The episode page id.
- */
-function createEpisodePage(show: Show, act: Act): Promise<PageId> {
-    const title = show.acts.length > 1 ? show.title + " w/ " + act.name : show.title;
-    const parent = show.residency ? `shows+${show.residency}` : `guests`;
-    const slug = slugify(title);
 
-    return kirxios.post(`/api/pages/${parent}/children`, {
-        slug: slug,
-        title: title,
-        template: 'episode',
-        content: {
-            title: title,
-            episode_visual: "none.jpg",
-            episode_date_enregistrement: dateToString(show.date) + " " + show.timeStart,
-            episode_description: act.bio,
-            episode_tags: show.tags.join(", "),
-            episode_url_mixcloud: act.mcLink || "https://trnstnradio.com",
-            episode_tracklist: ""
-        }
-    }).then(resp => resp.data.data.id.replaceAll('/','+'));
-}
-
-function downloadImage(_:any, img:Artwork): Promise<Blob | string | undefined> {
-    return img.download() || Promise.resolve(img.url);
-}
-
-async function uploadImageToCMS(page:PageId, img:Blob | string | undefined):Promise<ImageUploadResult> {
-    if (img instanceof Blob) {
-        const formData = new FormData();
-        formData.append('file', img);
-        const res = await kirxios({
-            method: "post",
-            url: `/api/pages/${page}/files`,
-            data: formData,
-            headers: { "Content-Type": "multipart/form-data" },
-        });
-        return res.data.data;
-    } else {
-        // image might already be uploaded...
-        let filename = img || "";
-        if (filename.lastIndexOf('/') >= 0) {
-            filename = filename.substring(filename.lastIndexOf('/') + 1);
-        }
-        return {
-            url: img || "",
-            filename: filename
-        } 
-    }
-}
-
-function updateEpisodeImage(page:PageId, filename:string) {
-    return kirxios.patch(`/api/pages/${page}`, {
-        episode_visual: filename
-    });
-}
-
-async function setStatusToListed(page:PageId, res:AxiosResponse) {
-    const r = await kirxios.patch(`/api/pages/${page}/status`, {
-        status: 'listed'
-    })
-    return r.data.data.url;
-}
-
-function slugify(str: string): string {
-    const r = Math.floor(Math.random()*1000);
-    return str.replaceAll(" ", "-").replace(/[^0-9-a-z]/gi, '').toLowerCase() + r;
-}
 
 export default {
     getUser,

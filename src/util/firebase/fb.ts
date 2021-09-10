@@ -1,32 +1,45 @@
 export { 
-    getFirestore, 
-    collection, query, where, orderBy, limit, startAfter,
-    updateDoc,
-    setDoc,
+    initializeApp 
+    } from "firebase/app";
+export type { 
+    DocumentData, 
+    FirestoreDataConverter,
+    UpdateData, 
+    WhereFilterOp,
+    }  from "firebase/firestore/lite";
+export { 
+    collection, 
     deleteDoc,
     deleteField, 
-    UpdateData,
-    getDocs, getDoc, doc, FirestoreDataConverter,
-    DocumentData, 
-    QuerySnapshot, 
-    QueryDocumentSnapshot, 
+    doc, 
+    getDocs, 
+    getDoc, 
+    getFirestore, 
+    limit, 
+    orderBy, 
+    query, 
+    where, 
+    setDoc,
+    startAfter,
+    updateDoc,
     CollectionReference,
     QueryConstraint,
-    WhereFilterOp,
+    QueryDocumentSnapshot, 
+    QuerySnapshot, 
     } from "firebase/firestore/lite";
-
-export { initializeApp } from "firebase/app"
-
 export { 
     getAuth, 
     onAuthStateChanged, 
     signInWithEmailAndPassword, 
     signOut,
-    UserCredential,
+    } from "firebase/auth";
+export type {
+    UserCredential
     } from "firebase/auth";
 export { 
-    getStorage, 
-    ref, uploadBytes, 
+    deleteObject,
     getDownloadURL, 
-    deleteObject 
+    getStorage, 
+    ref, 
+    uploadBytes,
     } from "firebase/storage";
