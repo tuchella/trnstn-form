@@ -1,6 +1,7 @@
 import { Act, Show } from '@/util/types';
 import uuid from './uuid';
 import { showsCollection, confidentialCollection, auth, infoDoc } from '@/util/firebase/firebase'; 
+import { isArtwork, NO_ARTWORK } from '@/model/Artwork';
 
 const REDACTED_MAIL = /^.\*\*\*.@.\*\*.\*\*.$/;
 const REDACTED_PHONE = /^.\*\*\*.$/;
@@ -20,6 +21,7 @@ async function saveShow(show:Show) {
     }
     for (const act of show.acts) {
         act.img = await act.img.save();
+        act.techRider = await act.techRider.save();
     }
     return await showsCollection.overwrite(show.id, show);
 }
@@ -63,12 +65,13 @@ function getFieldValue(o:any, field:string): any {
 async function saveAct(show: Show, act: Act, ...fields: string[]) {
     const data = new Map<string, any>();
     act.img = await act.img.save();
+    act.techRider = await act.techRider.save();
     if (fields.length > 0) {
-        fields.forEach(f => {
+        for (const f of fields) {
             const k = "acts." + act.id + "." + f;
             const v = getFieldValue(act, f);
             data.set(k, v);
-        });
+        }
     } else {
         data.set("acts." + act.id, act);
         data.get("acts." + act.id).index = show.acts.indexOf(act);
@@ -85,6 +88,9 @@ async function deleteShow(id?:string) {
     for (const act of show.acts) {
         if (act.img.delete) {
             await act.img.delete();
+        }
+        if (act.techRider.delete) {
+            await act.techRider.delete();
         }
     }
 }

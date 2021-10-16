@@ -38,7 +38,9 @@ function getUser(): Promise<User> {
         return auth.signIn(response.email, response.content.firebasekey).then(fb => {
             const name = fb.user?.displayName || fb.user?.email;
             user = name ? new User(name, true) : new User("Anonymous", false);
-            router.push('/shows')
+            //if (!router.currentRoute.path.endsWith('/login')) {
+            //    router.push('/shows')
+            //}
             return user;
         });
       })
@@ -161,7 +163,7 @@ function publishShow(show:Show, act:Act,
                 episode_visual: "none.jpg",
                 episode_date_enregistrement: dateToString(show.date) + " " + show.timeStart,
                 episode_description: act.bio,
-                episode_tags: show.tags.join(", "),
+                episode_tags: act.tags.join(", "),
                 episode_url_mixcloud: act.mcLink || "https://trnstnradio.com",
                 episode_tracklist: ""
             }

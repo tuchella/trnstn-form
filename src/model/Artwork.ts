@@ -7,6 +7,7 @@ export interface Artwork {
     readonly src: string;
     readonly url?: string;
     readonly name: string;
+    readonly isStored: boolean;
 
     save(): Promise<Artwork>;
     update(file:File): Promise<Artwork>;
@@ -14,9 +15,14 @@ export interface Artwork {
     delete?() : Promise<any>;
 }
 
+export function isArtwork(object: any): object is Artwork {
+    return typeof object === 'object' && 'src' in object && 'name' in object && 'isStored' in object;
+}
+
 class NoArtwork implements Artwork {
     readonly src  = "";
     readonly name = "";
+    readonly isStored = false;
 
     save() { 
         return Promise.resolve(this)
@@ -32,7 +38,8 @@ class NoArtwork implements Artwork {
 export const NO_ARTWORK:Artwork = new NoArtwork(); 
 
 export class StaticArtwork implements Artwork {
-    url: string
+    url: string;
+    readonly isStored = true;
 
     constructor(url:string) {
         this.url = url;
@@ -62,15 +69,20 @@ export class FirebaseArtwork implements Artwork {
     private _src: string;
     readonly ref: string;
     private content?: Blob;
+    readonly isStored = true;
 
     private constructor(ref: string, url:string) {
         this.ref = ref;
         this._src = url;
     }
 
-    static async load(ref:string): Promise<FirebaseArtwork> {
-        const url = await storage.getDownloadURL(ref);
-        return new FirebaseArtwork(ref, url);
+    static async load(ref:string): Promise<Artwork> {
+        try {
+            const url = await storage.getDownloadURL(ref);
+            return new FirebaseArtwork(ref, url);
+        } catch {
+            return NO_ARTWORK;
+        }
     }
 
     get src() {
@@ -114,6 +126,7 @@ export class FirebaseArtwork implements Artwork {
 export class UploadedArtwork implements Artwork {
     readonly file:File; 
     private _src:string;
+    readonly isStored = false;
 
     private constructor(file:File, content:string) {
         this.file = file;

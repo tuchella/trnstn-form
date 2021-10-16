@@ -17,7 +17,7 @@
 
           <div class="upload-form__ctls">
             <v-btn text> Cancel </v-btn>
-            <v-btn color="primary" @click="currentStep = 2"> Continue </v-btn>
+            <v-btn color="primary" @click="currentStep = 2" :disabled="!isStep1Complete"> Continue </v-btn>
           </div>
         </v-stepper-content>
 
@@ -31,7 +31,7 @@
 
           <div class="upload-form__ctls">
             <v-btn text @click="currentStep--"> Back </v-btn>
-            <v-btn color="primary" @click="currentStep++"> Continue </v-btn>
+            <v-btn color="primary" @click="currentStep++" :disabled="!isStep2Complete"> Continue </v-btn>
           </div>
         </v-stepper-content>
 
@@ -43,7 +43,7 @@
 
           <div class="upload-form__ctls">
             <v-btn text @click="currentStep--"> Back </v-btn>
-            <v-btn color="primary" @click="currentStep++"> Continue </v-btn>
+            <v-btn color="primary" @click="currentStep++" :disabled="!isStep3Complete"> Continue </v-btn>
           </div>
         </v-stepper-content>
 
@@ -52,7 +52,7 @@
 
           <div class="upload-form__ctls">
             <v-btn text @click="currentStep--"> Back </v-btn>
-            <v-btn color="primary" @click="currentStep = 1"> Close </v-btn>
+            
           </div>
         </v-stepper-content>
       </v-stepper-items>
@@ -92,7 +92,7 @@ export default class Upload extends Vue {
       { text: "trnstn", to: "/" },
       { text: "shows", to: "/shows" },
       {
-        text: this.show.title + " #" + this.show.number,
+        text: this.show.title,
         to: "/shows/" + this.show.id,
       },
       { text: "upload" },

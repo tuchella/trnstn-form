@@ -68,6 +68,6 @@ export const storage = {
   },
   delete(ref: string) {
     const storageRef = fb.ref(fbs, ref);
-    return fb.deleteObject(storageRef);
+    return fb.deleteObject(storageRef).then(() => true).catch(() => false);
   }
 }

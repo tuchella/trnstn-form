@@ -1,4 +1,4 @@
-import { showsCollection } from "@/util/firebase/firebase";
+import { showsCollection, showsOnlyCollection } from "@/util/firebase/firebase";
 
 export class ShowSearchFilter {
   residency?: string;
@@ -35,7 +35,7 @@ interface QueryResultShow {
 } 
 
 export async function searchShows(filter: ShowSearchFilter, offset?: Date): Promise<ShowSearchResult[]> {
-  const s = await showsCollection.query()
+  const s = await showsOnlyCollection.query()
     .whereMaybe("title", "==", filter.residency)
     .whereDateMaybe("date", ">=", filter.from)
     .whereDateMaybe("date", "<=", filter.to)

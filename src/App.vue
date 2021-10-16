@@ -186,4 +186,18 @@ header .v-btn::before {
   caret-color: rgba(0, 0, 0, 0.6) !important;
 }
 
+body main .theme--light.v-chip {
+  background: transparent !important;
+  border: 1px solid black;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+body main .theme--light.v-chip:hover {
+  background: black !important;
+  color: white;
+}
+body main .theme--light.v-chip:hover .v-icon {
+  color: white;
+}
+
 </style>

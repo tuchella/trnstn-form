@@ -26,9 +26,12 @@ export class Act {
     transport: string = "";
     pronouns: string = "";
     scLink: string = "";
+    igLink: string = "";
+    tags: Array<Tag> = [];
     comment: string = "";
     mcLink?: string;
     pageLink?: string;
+    techRider:Artwork = NO_ARTWORK;
 
     constructor(id:UUID, name:string) {
         this.id = id;
@@ -70,7 +73,6 @@ export class Show implements ScheduledShow  {
     contact: string = "";
     comment: string = "";
     acts: Array<Act> = [];
-    tags: Array<Tag> = [];
     residency?: string;
     createdAt?:Date;
 }

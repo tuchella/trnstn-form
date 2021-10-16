@@ -52,7 +52,7 @@ export default {
       this.$store.navigation = [
           { text: 'trnstn', to: '/'}, 
           { text: 'shows', to: '/shows'},
-          { text: this.show.title + ' #' + this.show.number, to: '/shows/' + this.show.id},
+          { text: this.show.title, to: '/shows/' + this.show.id},
           { text: "guests"},
           { text: this.act.name}
         ];

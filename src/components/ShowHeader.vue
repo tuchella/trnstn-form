@@ -9,7 +9,7 @@
             line-height: 45px;
             "
         >
-            {{ show.title }} {{'#' + show.number }}
+            {{ show.title }}
         </h1>
         </v-col>
         <v-col cols="12" sm="4" md="3" class="text-right">

@@ -1,4 +1,4 @@
-import { FirebaseArtwork, StaticArtwork } from "@/model/Artwork";
+import { Artwork, FirebaseArtwork, NO_ARTWORK, StaticArtwork } from "@/model/Artwork";
 import { Act, Show } from "@/util/types";
 import * as fb from "./fb";
 
@@ -13,13 +13,17 @@ export const convertActs = {
       transport: act.transport,
       pronouns: act.pronouns,
       scLink: act.scLink,
+      igLink: act.igLink,
       comment: act.comment,
-      img: {
-
-      }
+      img: {},
+      techRider: {},
+      tags: act.tags,
     };
     if (act.img.url) {
       data.img.url = act.img.url;
+    }
+    if (act.techRider.url) {
+      data.techRider.url = act.techRider.url;
     }
     if (act.mcLink) {
       data.mcLink = act.mcLink;
@@ -40,17 +44,25 @@ export const convertActs = {
     act.transport = data.transport;
     act.pronouns = data.pronouns;
     act.scLink = data.scLink;
+    act.igLink = data.igLink;
+    act.tags = data.tags;
 
-    const img: string | undefined = data.img.url;
-    if (img) {
-      if (img.startsWith("http://") || img.startsWith("https://")) {
-        act.img = new StaticArtwork(img);
-      } else {
-        FirebaseArtwork.load(img)
-          .then(artwork => act.img = artwork);
-      }
-    }
+    getfileForUrl(data.img?.url).then(file => act.img = file);
+    getfileForUrl(data.techRider?.url).then(file => act.techRider = file);
+
     return act;
+  }
+}
+
+function getfileForUrl(url: string | undefined): Promise<Artwork> {
+  if (url) {
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      return Promise.resolve(new StaticArtwork(url));
+    } else {
+      return FirebaseArtwork.load(url);
+    }
+  } else {
+    return Promise.resolve(NO_ARTWORK);
   }
 }
 
@@ -64,7 +76,6 @@ export const convertShows: fb.FirestoreDataConverter<Show> = {
       contact: show.contact,
       comment: show.comment,
       acts: {},
-      tags: show.tags,
       createdAt: show.createdAt || Date.now(),
     }
     show.acts.map(convertActs.toFirestore).forEach((a, i) => {
@@ -102,7 +113,6 @@ export const convertShows: fb.FirestoreDataConverter<Show> = {
     show.acts = Object.values(data.acts)
       .sort((a: any, b: any) => a.index - b.index)
       .map(convertActs.fromFirestore);
-    show.tags = data.tags;
     show.residency = data.residency;
     show.createdAt = data.createdAt;
     return show;

@@ -13,28 +13,53 @@
               ({{ show.date | formatDate }})
             </span>
             <div style="color: gray">
-              <span v-for="tag in show.tags" :key="tag"> #{{ tag }} </span>
+              <span v-for="tag in act.tags" :key="tag"> #{{ tag }} </span>
             </div>
           </v-col>
         </v-row>
         <FileUpload v-model="file.value" v-if="!act.mcLink" />
         <v-row>
-          <v-spacer></v-spacer>
-          <v-btn
-            class="ma-2"
-            color="secondary"
-            :disabled="!completed"
-            :href="act.mcLink"
-            target="_blank"
-            >visit</v-btn
-          >
-          <v-btn
-            class="ma-2 mr-3"
-            color="primary"
-            @click="upload"
-            :disabled="progress > 0 || !file.present()"
-            >publish</v-btn
-          >
+          <v-col cols="12">
+            <v-autocomplete
+              label="Tags"
+              :items="allTags"
+              :search-input.sync="tagSearch"
+              v-model="act.tags"
+              @change="tagSearch = ''"
+              auto-select-first
+              chips
+              deletable-chips
+              multiple
+            ></v-autocomplete>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12">
+            <v-textarea 
+              label="Description"
+              v-model="act.bio"
+              class="mb-2"
+            >
+            </v-textarea>
+          </v-col>
+        </v-row>
+        <v-row>
+            <v-spacer></v-spacer>
+            <v-btn
+              class="ma-2"
+              color="secondary"
+              :disabled="!completed"
+              :href="act.mcLink"
+              target="_blank"
+              >visit</v-btn
+            >
+            <v-btn
+              class="ma-2 mr-3"
+              color="primary"
+              @click="upload"
+              :disabled="progress > 0 || !file.present()"
+              >publish</v-btn
+            >
         </v-row>
       </v-col>
     </v-row>
@@ -59,6 +84,7 @@ import axios from "axios";
 import { getFileName } from "@/model/Artwork";
 import FakeProgress from "@/util/FakeProgress";
 import db from "@/util/db";
+import { tags } from "@/util/enums";
 
 @Component({
   components: {
@@ -70,6 +96,8 @@ export default class MixcloudUploadStep extends Vue {
   file: Maybe<File> = Maybe.empty();
   progress: number = 0.0;
   errorMessage: string = "";
+  allTags:string[] = tags;
+  tagSearch:string = "";
   @Prop({ required: true }) act!: Act;
   @Prop({ required: true }) show!: Show;
 
@@ -99,8 +127,8 @@ export default class MixcloudUploadStep extends Vue {
       if (artwork) {
         form.append("picture", artwork, getFileName(act.img));
       }
-      for (let i = 0; i < 5 && i < show.tags.length; i++) {
-        form.append(`tags-${i}-tag`, show.tags[i]);
+      for (let i = 0; i < 5 && i < act.tags.length; i++) {
+        form.append(`tags-${i}-tag`, act.tags[i]);
       }
       this.progress = 10;
       
@@ -120,7 +148,7 @@ export default class MixcloudUploadStep extends Vue {
         fakeProgress.stop();
         if (res.data.result.success) {
           act.mcLink = "https://mixcloud.com" + res.data.result.key;
-          await db.saveAct(show, act, "mcLink");
+          await db.saveAct(show, act, "mcLink", "bio", "tags");
           this.file.value = undefined;
         } else {
           this.errorMessage = "upload failed";

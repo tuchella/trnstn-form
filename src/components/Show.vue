@@ -97,8 +97,8 @@
             </span>
 
             <v-btn large color="primary" @click="addAct" class="float-right">
-              Add act
-              <v-icon style="margin-top: -4px" right dark>mdi-plus-circle-outline</v-icon>
+              Add guest
+              <v-icon style="margin-top: -4px" right dark>mdi-account-plus-outline</v-icon>
             </v-btn>
           </v-col>
         </v-row>
@@ -107,18 +107,6 @@
           <v-col cols="12">
             <!-- CONTACT -->
             <v-text-field label="Contact" v-model="show.contact"></v-text-field>
-            <!-- TAGS -->
-            <v-autocomplete
-              label="Tags"
-              :items="allTags"
-              :search-input.sync="tagSearch"
-              v-model="show.tags"
-              @change="tagSearch = ''"
-              auto-select-first
-              chips
-              deletable-chips
-              multiple
-            ></v-autocomplete>
             <!-- COMMENTS -->
             <v-textarea
               counter
@@ -167,7 +155,6 @@ import ShareLink from "./ShareLink.vue";
 import { auth } from "@/util/firebase/firebase";
 import db from "../util/db";
 import uuid from "../util/uuid";
-import { tags } from "../util/enums";
 import kirby from "../util/kirby";
 import * as t from '@/util/types';
 
@@ -192,6 +179,10 @@ export default {
     save() {
       const valid = this.$refs.form.validate()
       if (!valid) {
+        this.$nextTick(() => {
+            const el = this.$el.querySelector(".v-messages.error--text");
+            el?.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
+        });
         return;
       }
 
@@ -238,7 +229,6 @@ export default {
         if (this.show.acts.length == 0) {
           this.addAct();
         }
-        console.log(this.show.date)
         this.residencies = [ this.show ];
         this.selectedShow = this.show;
         this.$store.navigation = [
@@ -277,27 +267,12 @@ export default {
     overlay: false,
     date: new Date().toISOString().substr(0, 10),
     menu: false,
-    allTags: tags,
-    tagSearch: "",
   }),
 };
 </script>
 
 
 <style>
-body main .theme--light.v-chip {
-  background: transparent !important;
-  border: 1px solid black;
-  border-radius: 6px;
-  text-transform: uppercase;
-}
-body main .theme--light.v-chip:hover {
-  background: black !important;
-  color: white;
-}
-body main .theme--light.v-chip:hover .v-icon {
-  color: white;
-}
 .large-input {
   font-family: AA-Gothic;
   font-weight: normal;

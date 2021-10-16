@@ -7,6 +7,9 @@ Kirby::plugin('trnstn/trnstnform', [
     'templates' => [
         'tform' => __DIR__ . '/templates/form.php'
     ],
+    'snippets' => [
+        'trnstn-ical' => __DIR__.'/snippets/calendar.php'
+    ],
     'routes' => [
         [
             'pattern' => 'form/api/upcoming-shows',
@@ -60,6 +63,14 @@ Kirby::plugin('trnstn/trnstnform', [
                     'content' => [
                     ]
                 ]);
+            }
+        ],
+        [
+            'pattern' => 'trnstnevents.ics',
+            'action' => function() {
+                $site = site();
+                header::download(['mime'=>'text/calendar', 'name' => 'trnstnevents.ics']);
+                return snippet('trnstn-ical', ['site' => $site]);  // you'd have to adapt the snippet to use your fields
             }
         ]
     ]

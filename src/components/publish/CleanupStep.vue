@@ -17,10 +17,11 @@
                 everything was transfered to the CMS correctly beforehand. No
                 refunds.
               </p>
+              <v-progress-linear v-model="progress"></v-progress-linear>
             </v-card-text>
 
             <v-card-actions>
-              <v-btn color="red" block @click="deleteShow"> Delete Show Data </v-btn>
+              <v-btn color="red" block @click="deleteShow" :disabled="progress==100"> Delete Show Data </v-btn>
             </v-card-actions>
           </v-card>
 </template>
@@ -28,13 +29,31 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { Show } from "@/util/types";
+import FakeProgress from "@/util/FakeProgress";
+import db from "@/util/db";
+import { NO_ARTWORK } from "@/model/Artwork";
 
 @Component
 export default class CleanupStep extends Vue {
+    progress: number = 0.0;
     @Prop({ required: true }) show!: Show;
 
-    deleteShow() {
-        console.log(this.show);
+    async deleteShow() {
+        const fakeProgress = new FakeProgress(
+          (p) => this.progress = p,
+          1000,
+          this.progress
+        )
+        fakeProgress.start();
+        for (const act of this.show.acts) {
+          if (act.techRider.delete) {
+            await act.techRider.delete();
+            act.techRider = NO_ARTWORK;
+            await db.saveAct(this.show, act, "techRider")
+          }
+        }
+        fakeProgress.stop();
+        this.progress = 100;
     }
 }
 </script>

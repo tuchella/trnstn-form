@@ -7,11 +7,14 @@
         ref="upload"
         v-model="file"
       
-        outlined
-        label="audio file"
+        :outlined="outlined"
+        :label="label"
         prepend-icon=""
         prepend-inner-icon="mdi-file"
-        hide-details="true"
+        :hide-details="!hint"
+        :persistent-hint="persistentHint"
+        :hint="hint"
+        clearable
       >
       </v-file-input>
     </v-col>
@@ -23,7 +26,22 @@
 
 <script>
 export default {
-    props: ["value"],
+    props: {
+      value: {},
+      label: {
+        type: String,
+        default: "audio file"
+      },
+      hint: String,
+      persistentHint: {
+        type: Boolean,
+        default: false
+      },
+      outlined: {
+        type: Boolean,
+        default: true
+      },
+    },
     data: () => ({
         file: null
     }),

@@ -1,3 +1,4 @@
+import { isArtwork } from "@/model/Artwork";
 import Maybe from "@/model/Maybe";
 import { Act, Show } from "../types";
 import { convertActs, convertShows } from "./converters";
@@ -47,11 +48,13 @@ export default class Collection<T> {
         data[k] = convertActs.toFirestore(v);
       } else if (v instanceof Show) {
         data[k] = convertShows.toFirestore(v);
+      } else if (isArtwork(v)) {
+        data[k] = { url: v.url || null };
       } else {
         data[k] = v;
       }
     })
-    return fb.updateDoc(doc, data);
+    return fb.updateDoc(doc, data); 
   }
 
   query() {
