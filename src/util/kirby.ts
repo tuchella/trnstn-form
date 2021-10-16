@@ -38,9 +38,6 @@ function getUser(): Promise<User> {
         return auth.signIn(response.email, response.content.firebasekey).then(fb => {
             const name = fb.user?.displayName || fb.user?.email;
             user = name ? new User(name, true) : new User("Anonymous", false);
-            //if (!router.currentRoute.path.endsWith('/login')) {
-            //    router.push('/shows')
-            //}
             return user;
         });
       })

@@ -46,10 +46,23 @@ export default {
     showPassword: false,
     showNotification: false,
     notification: "",
+    unsubscribe: undefined,
   }),
   mounted() {
-    this.$emit('navigation', ['home', 'login']);
-    this.$store.navigation = ['home', 'login'];
+    this.$store.navigation = [
+          { text: 'trnstn', to: '/'}, 
+          { text: 'login'}
+    ]
+    this.unsubscribe = auth.onAuthStateChanged(() => {
+      if (auth.isSignedIn()) {
+            router.push('/shows')
+      }
+    });
+  },
+  unmounted() {
+    if (this.unsubscribe) {
+      this.unsubscribe()
+    }
   },
   /*
   
