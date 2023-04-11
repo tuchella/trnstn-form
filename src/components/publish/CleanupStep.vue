@@ -27,11 +27,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
-import { Show } from "@/util/types";
-import FakeProgress from "@/util/FakeProgress";
-import db from "@/util/db";
+import { Show } from "@/model/Show";
 import { NO_ARTWORK } from "@/model/Artwork";
+
+import db from "@/util/db";
+import FakeProgress from "@/util/FakeProgress";
+
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
 export default class CleanupStep extends Vue {

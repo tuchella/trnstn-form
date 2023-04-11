@@ -1,0 +1,23 @@
+TODO stuff
+
+X ADD ACT => ADD GUEST
+
+X Soundcloud/Mixcloud  => Not a specific set, send a sound page
+
+X Act/add new field ig account => 
+
+X Tags per act not per set
+
+X Hint allways visible => 
+
+X disable continue button if not finished => 
+
+X Export calendar as ical
+
+v1.1 
+
+X tag/bio edit on upload page
+
+v2.0
+
+_ batch download

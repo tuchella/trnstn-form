@@ -1,11 +1,8 @@
-import { Act, Show } from '@/util/types';
+import { Act, Show } from '@/model/Show';
+import ContactInfo from '@/model/ContactInfo';
+import { app } from '@/util/app';
 import uuid from './uuid';
-import { showsCollection, confidentialCollection, auth, infoDoc } from '@/util/firebase/firebase'; 
-import { isArtwork, NO_ARTWORK } from '@/model/Artwork';
 
-const REDACTED_MAIL = /^.\*\*\*.@.\*\*.\*\*.$/;
-const REDACTED_PHONE = /^.\*\*\*.$/;
-  
 async function saveShow(show:Show) {
     if (!show.id) {
         show.id = show.title.replaceAll(' ','').substring(0,4).toUpperCase() + uuid().substring(0,13).replace('-','');
@@ -13,38 +10,23 @@ async function saveShow(show:Show) {
     if (!show.createdAt) {
         show.createdAt = new Date();
     }
-    if (show.contact && !(show.contact.match(REDACTED_MAIL) || show.contact.match(REDACTED_PHONE))) {
-        const fullContact = show.contact;
-        const confidential = { contact: fullContact };
-        show.contact = redact(show.contact);
-        await confidentialCollection.overwrite(show.id, confidential);
+    if (show.contact.isSomeChanged) {
+        if (show.contact.isEmpty) {
+            await app.confidentialCollection.delete(show.id)
+        } else {
+            
+            await app.confidentialCollection.updateOrCreate(
+                show.id, show.contact.changedValues);
+        }
     }
     for (const act of show.acts) {
         act.img = await act.img.save();
         act.techRider = await act.techRider.save();
     }
-    return await showsCollection.overwrite(show.id, show);
+    
+    return await app.showsCollection.overwrite(show.id, show);
 }
 
-function redact(v:string) {
-    if (v.indexOf('@') > -1) {
-        const redacted = 
-            v.split('@')[0].slice(0,1) +
-            '***' +
-            v.split('@')[0].slice(-1) +
-            '@' +
-            v.split('@')[1].slice(0,1) +
-            '**.**'
-            v.split('@')[1].slice(-1);
-        return redacted;
-    } else {
-        const redacted = 
-            v.slice(0,1) +
-            '***' +
-            v.slice(-1);
-        return redacted;
-    }
-}
 
 function getFieldValue(o:any, field:string): any {
     let val;
@@ -76,15 +58,15 @@ async function saveAct(show: Show, act: Act, ...fields: string[]) {
         data.set("acts." + act.id, act);
         data.get("acts." + act.id).index = show.acts.indexOf(act);
     }
-    return showsCollection.update(show.id!, data);
+    return app.showsCollection.update(show.id!, data);
 }
 
 async function deleteShow(id?:string) {
     if (!id) {
         return;
     }
-    const show = await showsCollection.get(id)
-    await showsCollection.delete(id);
+    const show = await app.showsCollection.get(id)
+    await app.showsCollection.delete(id);
     for (const act of show.acts) {
         if (act.img.delete) {
             await act.img.delete();
@@ -100,24 +82,30 @@ async function getShow(id?:string): Promise<Show> {
         return Promise.reject("Can not find show without id");
     }
 
-    const show = await showsCollection.get(id)
+    const show = await app.showsCollection.get(id)
 
-    if (show && show.id && auth.isSignedIn()) {
-        const confidential = await confidentialCollection.getMaybe(show.id);
-        confidential.ifPresent(c => {
-            const contact = c['contact'];
-            show.contact = contact || show.contact;
+    if (show && show.id && app.auth.isSignedIn()) {
+        const confidential = await app.confidentialCollection.getMaybe(show.id);
+        confidential.ifPresent((c:any) => {
+            // LEGACY MIGRATION CODE
+            // in the past we stored contact info as a single 
+            // string value.
+            if (c.contact) {
+                show.contact = new ContactInfo(c.contact);
+            } else {
+                show.contact = new ContactInfo(c.email, c.phone);
+            }
         });
     }
     return show;
 }
 
-function getInfo() {
-    return infoDoc.get();
+function getInfo():Promise<string> {
+    return app.infoDoc.get();
 }
 
 function saveInfo(text:string) {
-    return infoDoc.set(text);
+    return app.infoDoc.set(text);
 }
 
 export default {

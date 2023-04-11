@@ -1,7 +1,7 @@
 export function dateWithYearOffset(years: number): string {
     const date = new Date();
     date.setDate(date.getDate() + (years*365));
-    return date.toISOString().substr(0, 10);
+    return date.toISOString().substring(0, 10);
 }
 
 export function dateToString(date: any): string {

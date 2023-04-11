@@ -35,35 +35,37 @@
   </v-container>
 </template>
 
-<script>
-import { auth } from "@/util/firebase/firebase";
+<script lang="ts">
+import { app } from "@/util/app";
 import router from "../router/index";
 
-export default {
-  data: () => ({
-    password: "",
-    username: "",
-    showPassword: false,
-    showNotification: false,
-    notification: "",
-    unsubscribe: undefined,
-  }),
+import { Component, Vue } from "vue-property-decorator";
+
+@Component
+export default class LoginView extends Vue {
+    password:string= "";
+    username:string = "";
+    showPassword:boolean = false;
+    showNotification:boolean= false;
+    notification:string= "";
+    unsubscribe?:()=>void = undefined;
+  
   mounted() {
     this.$store.navigation = [
           { text: 'trnstn', to: '/'}, 
           { text: 'login'}
     ]
-    this.unsubscribe = auth.onAuthStateChanged(() => {
-      if (auth.isSignedIn()) {
+    this.unsubscribe = app.auth.onAuthStateChanged(() => {
+      if (app.auth.isSignedIn()) {
             router.push('/shows')
       }
     });
-  },
+  }
   unmounted() {
     if (this.unsubscribe) {
       this.unsubscribe()
     }
-  },
+  }
   /*
   
   watch: {
@@ -73,20 +75,18 @@ export default {
       }
     }
   },*/
-  methods: {
     login() {
-      auth.signIn(this.username, this.password)
+      app.auth.signIn(this.username, this.password)
         .then(() => {
           router.push("/");
           this.$emit('auth-changed')
         })
         .catch((e) => {
-          this.notification = e.message; 
+          this.notification = e.message || e; 
           this.showNotification = true;
         });
-    },
-  },
-};
+    }
+}
 </script>
 
 <style>

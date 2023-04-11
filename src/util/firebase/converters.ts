@@ -1,6 +1,9 @@
 import { Artwork, FirebaseArtwork, NO_ARTWORK, StaticArtwork } from "@/model/Artwork";
-import { Act, Show } from "@/util/types";
+import ContactInfo from "@/model/ContactInfo";
+import { Act, Show } from "@/model/Show";
+
 import * as fb from "./fb";
+import redact from "@/util/redact";
 
 export const convertActs = {
   toFirestore: (act: Act) => {
@@ -15,6 +18,7 @@ export const convertActs = {
       scLink: act.scLink,
       igLink: act.igLink,
       comment: act.comment,
+      techRiderText: act.techRiderText,
       img: {},
       techRider: {},
       tags: act.tags,
@@ -46,6 +50,7 @@ export const convertActs = {
     act.scLink = data.scLink;
     act.igLink = data.igLink;
     act.tags = data.tags;
+    act.techRiderText = data.techRiderText;
 
     getfileForUrl(data.img?.url).then(file => act.img = file);
     getfileForUrl(data.techRider?.url).then(file => act.techRider = file);
@@ -73,8 +78,12 @@ export const convertShows: fb.FirestoreDataConverter<Show> = {
       title: show.title,
       number: show.number,
       date: show.date,
-      contact: show.contact,
+      contact: {
+        email: redact(show.contact.email.value),
+        phone: redact(show.contact.phone.value),
+      },
       comment: show.comment,
+      eventRef: show.eventRef || "none",
       acts: {},
       createdAt: show.createdAt || Date.now(),
     }
@@ -102,13 +111,24 @@ export const convertShows: fb.FirestoreDataConverter<Show> = {
     show.number = data.number;
     show.timeStart = data.timeStart;
     show.timeEnd = data.timeEnd;
+    show.eventRef = data.eventRef;
     if (data.date && data.date.toDate) {
       show.date = data.date.toDate();
     } else {
       show.date = data.date;
     }
 
-    show.contact = data.contact;
+    // LEGACY MIGRATION CODE
+    // in the past we stored contact info as a single 
+    // string value.
+    if (typeof data.contact == "string") {
+      show.contact = new ContactInfo(data.contact);
+    } else {
+      show.contact = new ContactInfo(
+        data.contact.email, 
+        data.contact.phone
+      );
+    }
     show.comment = data.comment;
     show.acts = Object.values(data.acts)
       .sort((a: any, b: any) => a.index - b.index)

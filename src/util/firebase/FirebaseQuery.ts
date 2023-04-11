@@ -1,19 +1,7 @@
+import { AppCollectionQuery, AppCollectionQueryField, AppCollectionQueryOrder, AppCollectionQueryResult, AppQueryFieldValue, WhereOp } from "@/model/AppCollection";
 import * as fb from "./fb";
 
-export type WhereOp = fb.WhereFilterOp;
-
-interface Query {
-  field: string;
-  op: WhereOp;
-  value: any;
-}
-
-interface QueryOrder {
-  field: string;
-  direction?: "asc" | "desc";
-}
-
-class FirestoreQueryResult {
+class FirestoreQueryResult implements AppCollectionQueryResult {
   private readonly snapshot:fb.QuerySnapshot<fb.DocumentData>;
 
   constructor(snapshot: fb.QuerySnapshot<fb.DocumentData>) {
@@ -30,12 +18,12 @@ class FirestoreQueryResult {
   }
 }
 
-export default class FirestoreQuery {
+export default class FirestoreQuery implements AppCollectionQuery {
   private col: fb.CollectionReference;
-  private filters: Query[] = [];
-  private _orderBy?: QueryOrder;
-  private _limit?: any;
-  private _offset?: any;
+  private filters: AppCollectionQueryField[] = [];
+  private _orderBy: AppCollectionQueryOrder[] = [];
+  private _limit?: number;
+  private _offsets: AppQueryFieldValue[] = [];
 
   constructor(col: fb.CollectionReference) {
     this.col = col;
@@ -68,15 +56,15 @@ export default class FirestoreQuery {
   }
 
   orderBy(field: string, direction: "asc" | "desc"): FirestoreQuery {
-    this._orderBy = {
+    this._orderBy.push({
       field: field,
       direction: direction
-    }
+    })
     return this;
   }
 
-  offset(offset?: any) {
-    this._offset = offset;
+  offset(offset: AppQueryFieldValue[]) {
+    this._offsets = offset;
     return this;
   }
 
@@ -87,14 +75,14 @@ export default class FirestoreQuery {
 
   async get(): Promise<FirestoreQueryResult> {
     const conditions: fb.QueryConstraint[] = this.filters.map(w => fb.where(w.field, w.op, w.value));
-    if (this._orderBy) {
-      conditions.push(fb.orderBy(this._orderBy.field, this._orderBy.direction))
-    }
+    this._orderBy.forEach(o => {
+      conditions.push(fb.orderBy(o.field, o.direction))
+    });
     if (this._limit) {
       conditions.push(fb.limit(this._limit));
     }
-    if (this._offset) {
-      conditions.push(fb.startAfter(this._offset));
+    if (this._offsets.length > 0) {
+      conditions.push(fb.startAfter(...this._offsets));
     }
 
     const q = fb.query(this.col, ...conditions);

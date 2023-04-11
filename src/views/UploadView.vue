@@ -28,7 +28,6 @@
             :act="act" :show="show"
           ></MixcloudUploadStep>
 
-
           <div class="upload-form__ctls">
             <v-btn text @click="currentStep--"> Back </v-btn>
             <v-btn color="primary" @click="currentStep++" :disabled="!isStep2Complete"> Continue </v-btn>
@@ -61,15 +60,16 @@
 </template>
 
 <script lang="ts">
-import db from "@/util/db";
+import { Show } from "@/model/Show";
 
 import CleanupStep from "@/components/publish/CleanupStep.vue";
 import MixcloudAuthStep from "@/components/publish/MixcloudAuthStep.vue";
 import MixcloudUploadStep from "@/components/publish/MixcloudUploadStep.vue";
 import PublishToCmsStep from "@/components/publish/PublishToCmsStep.vue";
 
+import db from "@/util/db";
+
 import { Component, Vue } from "vue-property-decorator";
-import { Show } from "@/util/types";
 
 @Component({
   components: {

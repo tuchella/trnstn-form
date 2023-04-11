@@ -75,16 +75,19 @@
 </template>
 
 <script lang="ts">
-import { Act, Show } from "@/util/types";
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { getFileName } from "@/model/Artwork";
+import Maybe from "@/model/Maybe";
+import { Act, Show } from "@/model/Show";
+
 import ArtworkUpload from "@/components/ArtworkUpload.vue";
 import FileUpload from "@/components/FileUpload.vue";
-import Maybe from "@/model/Maybe";
-import axios from "axios";
-import { getFileName } from "@/model/Artwork";
-import FakeProgress from "@/util/FakeProgress";
+
 import db from "@/util/db";
 import { tags } from "@/util/enums";
+import FakeProgress from "@/util/FakeProgress";
+
+import axios from "axios";
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component({
   components: {
@@ -155,9 +158,13 @@ export default class MixcloudUploadStep extends Vue {
           console.log("upload failed", res);
         }
         this.progress = 100;
-      } catch (e) {
+      } catch (e:any) {
         fakeProgress.stop();
-        this.errorMessage = e;
+        if (e.message) {
+          this.errorMessage = e.message;
+        } else {
+          this.errorMessage = String(e);
+        }
         console.log("upload failed", e);
       }
     }

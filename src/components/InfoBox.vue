@@ -17,21 +17,21 @@
   </v-alert>
 </template>
 
-<script>
-export default {
-  props: ["value"],
-  data: () => ({
-    hidden: false,
-  }),
-  computed: {
-    text() {
-      return this.value
-        .replaceAll("<", "&;lt")
-        .replaceAll(">", "&;gt")
-        .replaceAll("\n", "<br>");
-    },
-  },
-};
+<script lang="ts">
+import { Component, Vue, Prop } from "vue-property-decorator";
+
+@Component
+export default class InfoBox extends Vue {
+  @Prop({ required: true }) value!: string;
+  hidden: boolean = false;
+
+  get text() {
+    return this.value
+      .replaceAll("<", "&;lt")
+      .replaceAll(">", "&;gt")
+      .replaceAll("\n", "<br>");
+  }
+}
 </script>
 
 <style>

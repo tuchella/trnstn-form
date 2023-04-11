@@ -1,4 +1,5 @@
 import { Artwork, NO_ARTWORK } from "@/model/Artwork";
+import ContactInfo from "@/model/ContactInfo";
 
 export type UUID = string;
 /**
@@ -32,6 +33,7 @@ export class Act {
     mcLink?: string;
     pageLink?: string;
     techRider:Artwork = NO_ARTWORK;
+    techRiderText: string = "";
 
     constructor(id:UUID, name:string) {
         this.id = id;
@@ -45,6 +47,7 @@ export interface ScheduledShow {
     timeStart?: TimeStr;
     timeEnd?: TimeStr;
     residency?: string;
+    eventRef?: string;
 }
 
 export class ScheduledShowImpl implements ScheduledShow {
@@ -53,13 +56,15 @@ export class ScheduledShowImpl implements ScheduledShow {
     timeStart?: TimeStr;
     timeEnd?: TimeStr;
     residency?: string;
+    eventRef?: string;
 
-    constructor(title:string, date:Date, start:TimeStr, end:TimeStr, residency?:string ) {
+    constructor(title:string, date:Date, start:TimeStr, end:TimeStr, residency?:string, eventRef?:string ) {
         this.title = title;
         this.date = date;
         this.timeStart = start;
         this.timeEnd = end;
         this.residency = residency;
+        this.eventRef = eventRef;
     }
 }
 
@@ -70,21 +75,10 @@ export class Show implements ScheduledShow  {
     timeStart?: TimeStr;
     timeEnd?: TimeStr;
     date?: Date;
-    contact: string = "";
+    contact: ContactInfo = new ContactInfo();
     comment: string = "";
     acts: Array<Act> = [];
     residency?: string;
     createdAt?:Date;
-}
-
-
-
-export class User {
-    name:string;
-    authenticated:boolean;
-
-    constructor(name:string, authenticated:boolean) {
-        this.name = name;
-        this.authenticated = authenticated;
-    }
+    eventRef?: string;
 }

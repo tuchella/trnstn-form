@@ -1,11 +1,13 @@
+import { AppCollection, AppCollectionQuery } from "@/model/AppCollection";
 import { isArtwork } from "@/model/Artwork";
 import Maybe from "@/model/Maybe";
-import { Act, Show } from "../types";
+import { Act, Show } from "@/model/Show";
+
 import { convertActs, convertShows } from "./converters";
 import * as fb from "./fb";
-import FirestoreQuery from "./FirestoreQuery";
+import FirestoreQuery from "./FirebaseQuery";
 
-export default class Collection<T> {
+export default class FirebaseCollection<T> implements AppCollection<T> {
   private readonly col: fb.CollectionReference<T>;
 
   constructor(col: fb.CollectionReference<T>) {
@@ -35,7 +37,21 @@ export default class Collection<T> {
 
   overwrite(id: string, content: any) {
     const doc = fb.doc(this.col, id);
+    
     return fb.setDoc(doc, content);
+  }
+
+  async updateOrCreate(id: string, content: Map<string, any>) {
+    //const doc = await fb.getDoc(fb.doc(this.col, id));
+    //if (!doc.exists()) {
+      // FIX: Data must be an object, but it was: a custom Map object
+    const doc = fb.doc(this.col, id);
+    const data:object = Object.fromEntries(content);
+    return fb.setDoc(doc, data, { merge: true });
+    
+    //} else {
+    //  return this.update(id, content);
+    //}
   }
 
   update(id: string, content: Map<string, any>) {
@@ -57,7 +73,7 @@ export default class Collection<T> {
     return fb.updateDoc(doc, data); 
   }
 
-  query() {
+  query():AppCollectionQuery {
     return new FirestoreQuery(this.col);
   }
 }

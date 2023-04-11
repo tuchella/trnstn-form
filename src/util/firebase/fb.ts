@@ -23,6 +23,7 @@ export {
     startAfter,
     updateDoc,
     CollectionReference,
+    DocumentReference,
     QueryConstraint,
     QueryDocumentSnapshot, 
     QuerySnapshot, 

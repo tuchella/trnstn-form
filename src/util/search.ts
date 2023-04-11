@@ -1,4 +1,5 @@
-import { showsCollection, showsOnlyCollection } from "@/util/firebase/firebase";
+import { app } from "@/util/app";
+import { Timestamp } from "firebase/firestore/lite";
 
 export class ShowSearchFilter {
   residency?: string;
@@ -34,15 +35,17 @@ interface QueryResultShow {
   };
 } 
 
-export async function searchShows(filter: ShowSearchFilter, offset?: Date): Promise<ShowSearchResult[]> {
-  const s = await showsOnlyCollection.query()
+export async function searchShows(filter: ShowSearchFilter, offset?: Date, offsetId?: string): Promise<ShowSearchResult[]> {
+  const offsets = offset && offsetId ? [offset, offsetId] : []; 
+  const query = app.showsSearchCollection.query()
     .whereMaybe("title", "==", filter.residency)
     .whereDateMaybe("date", ">=", filter.from)
     .whereDateMaybe("date", "<=", filter.to)
     .orderBy("date", "desc")
+    .orderBy("id", "desc")
     .limit(10)
-    .offset(offset)
-    .get();
+    .offset(offsets);
+  const s = await query.get();
   return s.map((d:QueryResultShow) => {
     const acts = Object.values(d.acts);
     let status:ShowStatus = "open";
@@ -51,6 +54,7 @@ export async function searchShows(filter: ShowSearchFilter, offset?: Date): Prom
     } else if (acts.every(a => a.mcLink)) {
       status = "uploaded"
     }
+    
     return new ShowSearchResult(d.id, d.title, d.date, status);
   });
 }

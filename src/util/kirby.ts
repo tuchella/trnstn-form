@@ -1,12 +1,14 @@
-import axios, { AxiosResponse } from 'axios';
-import { extname } from 'path';
-import { auth } from '@/util/firebase/firebase';
-import { stringToDate, dateToString } from '@/util/date';
-import ContextualPromiseChain from '@/model/ContextualPromiseChain';
-import { Act, ScheduledShow, ScheduledShowImpl, Show, User } from '@/util/types';
 import { Artwork, StaticArtwork } from '@/model/Artwork';
+import ContextualPromiseChain from '@/model/ContextualPromiseChain';
+import { Act, ScheduledShow, ScheduledShowImpl, Show } from '@/model/Show';
+import { User } from '@/model/User';
+
+import { app } from '@/util/app'
+import { stringToDate, dateToString } from '@/util/date';
 import db from '@/util/db';
-import router from '@/router/index'
+
+import { extname } from 'path';
+import axios, { AxiosResponse } from 'axios';
 
 declare global {
     interface Window {
@@ -22,35 +24,27 @@ const kirxios = axios.create({
 
 const SHOW_CACHE: Array<ScheduledShow> = [];
 
-let user:User | undefined = undefined;
+let cachedUser:User | undefined = undefined;
 
 function getUser(): Promise<User> {
-    console.log("getUser()")
-    
-    if (user) {
-        return Promise.resolve(user);
+    if (cachedUser) {
+        return Promise.resolve(cachedUser);
     }
 
     return kirxios.get("/api/auth?select=content,name,username,email")
       .then(response => response.data.data)
-      .then(response => {
-        // do something with the page data
-        return auth.signIn(response.email, response.content.firebasekey).then(fb => {
-            const name = fb.user?.displayName || fb.user?.email;
-            user = name ? new User(name, true) : new User("Anonymous", false);
-            return user;
-        });
-      })
+      .then(response => app.auth.signIn(response.email, response.content.firebasekey))
+      .then(user => cachedUser = user)
       .catch(error => {
         if (error.response && error.response.status == 403) {
             // user is simply not logged in, that's ok.
-            user = new User("Anonymous", false);
+            cachedUser = new User("Anonymous", false);
         } else {
             console.error(error);
             // something went wrong
-            user = new User("ERROR", false);
+            cachedUser = new User("ERROR", false);
         }
-        return user;
+        return cachedUser;
       });
 }
 
@@ -65,7 +59,8 @@ function getScheduledShows(): Promise<Array<ScheduledShow>> {
                         stringToDate(r.date),
                         r.start,
                         r.end,
-                        r.residency
+                        r.residency,
+                        r.id
                     );
                     return show;
                 });
@@ -80,7 +75,8 @@ function getScheduledShows(): Promise<Array<ScheduledShow>> {
                         "SYSTEM CURRENTLY UNAVAILABLE",
                         stringToDate("1970-01-01"),
                         "00:00",
-                        "00:01"
+                        "00:01",
+                        undefined
                     )
                 ];
             });
@@ -126,7 +122,6 @@ function publishShow(show:Show, act:Act,
         .then(updatePageUrlInFirebase)
         .then(listener.notify(7))
         .then((ctx:PageId, res:any) => {
-            console.log(ctx, res);
             return Promise.resolve(res);
         })
         .dropContext();

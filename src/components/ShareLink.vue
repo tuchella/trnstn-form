@@ -32,20 +32,22 @@
   </div>
 </template>
 
-<script>
-export default {
-  props: ["value"],
-  data: () => ({
-    showCopyNotification: false,
-  }),
-  methods: {
-    copyLink() {
-      this.$refs.shareLink.$refs.input.select();
+<script lang="ts">
+import { Component, Vue, Prop } from "vue-property-decorator";
+
+@Component
+export default class ShareLink extends Vue {
+  @Prop({ required: true }) value!: string;
+  showCopyNotification: boolean = false;
+
+  copyLink() {
+      const el = this.$refs.shareLink as Vue;
+      const input = el.$refs.input as HTMLInputElement;
+      input.select();
       document.execCommand("copy");
       this.showCopyNotification = true;
-    },
-  },
-};
+    }
+}
 </script>
 
 <style>

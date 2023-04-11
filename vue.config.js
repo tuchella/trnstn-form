@@ -1,4 +1,5 @@
 const buildPlugin = require('./build-php.js').build;
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const ArbitraryCodeAfterReload = function(cb) {
   this.apply = function(compiler) {
@@ -9,8 +10,10 @@ const ArbitraryCodeAfterReload = function(cb) {
 };
 
 const plugins = [];
+
 if (process.env.NODE_ENV === 'development') {
   plugins.push(new ArbitraryCodeAfterReload(buildPlugin));
+  //plugins.push(new BundleAnalyzerPlugin());
 }
 
 module.exports = {

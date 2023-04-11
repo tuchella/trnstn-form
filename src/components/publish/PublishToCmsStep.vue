@@ -20,10 +20,11 @@
 </template>
 
 <script lang="ts">
+import { Show, Act } from "@/model/Show";
+
 import kirby from "@/util/kirby";
 
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { Show, Act } from "@/util/types";
 
 @Component
 export default class PublishToCmsStep extends Vue {

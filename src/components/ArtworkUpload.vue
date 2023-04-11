@@ -47,7 +47,7 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { Act } from "@/util/types";
+import { Act } from "@/model/Show";
 import { NO_ARTWORK } from "@/model/Artwork";
 
 @Component

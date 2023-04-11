@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import { auth } from '@/util/firebase/firebase'
+
+import { app } from '@/util/app' 
 
 Vue.use(VueRouter)
 
@@ -8,31 +9,35 @@ const routes = [
   {
     path: '/shows',
     name: 'ShowList',    
-    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/Shows.vue'),
+    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/ShowListView.vue'),
     meta: {
       requiresAuth: true
     }
   },{
     path: '/',
     name: 'Home',
-    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/ShowForm.vue'),
+    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/ShowFormView.vue'),
     meta: {
       requiresAuth: false
     }
   },{
     path: '/shows/:id/upload/redirect/',
     name: 'UploadRedirect',    
-    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/Upload.vue'),
+    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/UploadView.vue'),
     meta: {
       requiresAuth: true
     }
   },{
     path: '/shows/:id/upload/',
     name: 'Upload',    
-    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/Upload.vue'),
+    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/UploadView.vue'),
     meta: {
       requiresAuth: true
     }
+  },{
+    path: '/shows/:id/thanks',
+    name: 'ThankYou',    
+    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/ThankYouView.vue'),
   },{
     path: '/shows/:showId/:actId/',
     name: 'Act',    
@@ -40,15 +45,15 @@ const routes = [
   },{
     path: '/shows/:id/',
     name: 'Show',    
-    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/ShowForm.vue'),
+    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/ShowFormView.vue'),
   },{
     path: '/login',
     name: 'Login',
-    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/Login.vue')
+    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/LoginView.vue')
   },{
-    path: '/thanks',
-    name: 'ThankYou',    
-    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/ThankYou.vue'),
+    path: '/test',
+    name: 'TestNav',
+    component: () => import(/* webpackChunkName: "tschoenk" */ '../views/TestLink.vue'),
   }
 ]
 
@@ -61,7 +66,7 @@ const router = new VueRouter({
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(x => x.meta.requiresAuth)
 
-  if (requiresAuth && !auth.isSignedIn()) {
+  if (requiresAuth && !app.auth.isSignedIn()) {
     next('/login')
   } else {
     next()

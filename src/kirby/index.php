@@ -33,6 +33,7 @@ Kirby::plugin('trnstn/trnstnform', [
                         }
 
                         return [
+                            'id' => $e->id(),
                             'title' => $e->content()->get('title')->value(),
                             'date' => $start_date,
                             'start' => $start_time,
@@ -66,11 +67,12 @@ Kirby::plugin('trnstn/trnstnform', [
             }
         ],
         [
-            'pattern' => 'trnstnevents.ics',
+            'pattern' => 'cal/trnstnevents.ics',
             'action' => function() {
                 $site = site();
                 header::download(['mime'=>'text/calendar', 'name' => 'trnstnevents.ics']);
-                return snippet('trnstn-ical', ['site' => $site]);  // you'd have to adapt the snippet to use your fields
+                $data = snippet('trnstn-ical', ['site' => $site]);
+                return new Response($data, 'text/calendar');
             }
         ]
     ]

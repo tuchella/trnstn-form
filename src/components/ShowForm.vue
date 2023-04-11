@@ -8,7 +8,7 @@
             <v-autocomplete
               class="large-input"
               height="61px"
-              style="font-size:50px"
+              style="font-size: 50px"
               :readonly="show.id != undefined"
               :items="residencies"
               item-text="title"
@@ -19,7 +19,13 @@
               return-object
               v-model="selectedShow"
               @input="showSelected"
-            ></v-autocomplete>
+            >
+              <template v-slot:item="data">
+                <v-list-item-content
+                  v-text="formatTitle(data.item)"
+                ></v-list-item-content>
+              </template>
+            </v-autocomplete>
           </v-col>
           <!--
           <v-col cols="3" sm="2">
@@ -34,7 +40,7 @@
           -->
         </v-row>
         <!-- DATE/TIME INPUTS -->
-        <v-row >
+        <v-row>
           <v-col cols="12" sm="8">
             <DatePicker v-model="show.date" :readonly="true" />
           </v-col>
@@ -98,7 +104,9 @@
 
             <v-btn large color="primary" @click="addAct" class="float-right">
               Add guest
-              <v-icon style="margin-top: -4px" right dark>mdi-account-plus-outline</v-icon>
+              <v-icon style="margin-top: -4px" right dark
+                >mdi-account-plus-outline</v-icon
+              >
             </v-btn>
           </v-col>
         </v-row>
@@ -106,7 +114,16 @@
         <v-row>
           <v-col cols="12">
             <!-- CONTACT -->
-            <v-text-field label="Contact" v-model="show.contact"></v-text-field>
+            <v-text-field
+              label="Contact (E-Mail) *"
+              :rules="requiredField"
+              v-model="show.contact.email.value"
+            ></v-text-field>
+            <!-- PHONE -->
+            <v-text-field
+              label="Contact (Phone)"
+              v-model="show.contact.phone.value"
+            ></v-text-field>
             <!-- COMMENTS -->
             <v-textarea
               counter
@@ -146,82 +163,58 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import ActForm from "./ActForm.vue";
 import DatePicker from "./DatePicker.vue";
 import InfoBox from "./InfoBox.vue";
 import ShareLink from "./ShareLink.vue";
 
-import { auth } from "@/util/firebase/firebase";
-import db from "../util/db";
-import uuid from "../util/uuid";
-import kirby from "../util/kirby";
-import * as t from '@/util/types';
+import { Act, ScheduledShow, Show } from "@/model/Show";
 
+import { app } from "@/util/app";
+import { dateToString } from "@/util/date";
+import db from "@/util/db";
+import kirby from "@/util/kirby";
+import uuid from "@/util/uuid";
 
-export default {
-  props: ["id", "actId"],
-  components: { ActForm, DatePicker, InfoBox, ShareLink },
-  name: "Show",
-  computed: {
-    isSignedIn() {
-      return auth.isSignedIn();
-    },
-    link() {
-      const id = this.show.id;
-      return `${window.location.protocol}//${window.location.host}/form/shows/${id}`;
-    },
+import { Component, Vue, Prop } from "vue-property-decorator";
+
+type VForm = Vue & { validate: () => boolean };
+interface ShowSelection { title: string }
+
+@Component({
+  components: {
+    ActForm,
+    DatePicker,
+    InfoBox,
+    ShareLink,
   },
-  methods: {
-    addAct() {
-      this.show.acts.push(new t.Act(uuid(), ""));
-    },
-    save() {
-      const valid = this.$refs.form.validate()
-      if (!valid) {
-        this.$nextTick(() => {
-            const el = this.$el.querySelector(".v-messages.error--text");
-            el?.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
-        });
-        return;
-      }
+})
+export default class ShowForm extends Vue {
+  @Prop({ required: false }) id?: string;
 
-      this.overlay = true;
-      db.saveShow(this.show).then(() => {
-        if (this.isSignedIn) {
-          this.overlay = false;
-        } else {
-          this.$router.push({ name: "ThankYou" });
-        }
-      });
-      if (this.isSignedIn) {
-        db.saveInfo(this.info);
-      }
-    },
-    removeAct(g) {
-      this.show.acts.splice(g, 1);
-    },
-    showSelected(sel) {
-      this.show.title = sel.title;
-      this.show.date = sel.date;
-      this.show.timeStart = sel.timeStart;
-      this.show.timeEnd = sel.timeEnd;
-      this.show.residency = sel.residency;
-      const nav = this.$store.navigation;
-      nav[nav.length - 1].text = this.show.title;
-    },
-    titleChanged() {
-      if (!/^[0-9]*$/.test(this.show.number)) {
-        this.$nextTick(() => {
-          this.show.number = this.show.number.replace(/\D/g,'');
-        });
-      } else {
-        const nav = this.$store.navigation;
-        nav[nav.length - 1].text = this.show.title;
-      }
+  show: Show = new Show();
+  selectedShow: ShowSelection = { title: "" };
+  residencies: ScheduledShow[] = [];
+  info: string = "";
+  emailRules = [
+    (v?: string) => !!v || "E-mail is required",
+    (v?: string) => (v && /.+@.+\..+/.test(v)) || "E-mail must be valid",
+  ];
+  requiredField = [(v?: string) => !!v || "This field is required"];
+  overlay = false;
+  
+  get isSignedIn() {
+    return app.auth.isSignedIn();
+  }
+  get link() {
+    const id = this.show.id;
+    return `${window.location.protocol}//${window.location.host}/form/shows/${id}`;
+  }
+  get form(): VForm {
+    return this.$refs.form as Vue & { validate: () => boolean };
+  }
 
-    },
-  },
   mounted() {
     if (this.id) {
       db.getShow(this.id).then((data) => {
@@ -229,7 +222,7 @@ export default {
         if (this.show.acts.length == 0) {
           this.addAct();
         }
-        this.residencies = [ this.show ];
+        this.residencies = [this.show];
         this.selectedShow = this.show;
         this.$store.navigation = [
           { text: "trnstn", to: "/" },
@@ -238,37 +231,78 @@ export default {
         ];
       });
     } else {
-      this.show = new t.Show()
+      this.show = new Show();
       this.addAct();
       this.$store.navigation = [
         { text: "trnstn", to: "/" },
         { text: "shows", to: "/shows" },
         { text: "new show" },
       ];
-      kirby.getScheduledShows().then(shows => {
+      kirby.getScheduledShows().then((shows) => {
         this.residencies = shows;
-      })
+      });
     }
     db.getInfo().then((info) => (this.info = info));
-    
-  },
+  }
 
-  data: () => ({
-    show: new t.Show(),
-    selectedShow: {
-      title: ""
-    },
-    residencies: [],
-    info: "",
-    emailRules: [
-      (v) => !!v || "E-mail is required",
-      (v) => /.+@.+\..+/.test(v) || "E-mail must be valid",
-    ],
-    overlay: false,
-    date: new Date().toISOString().substr(0, 10),
-    menu: false,
-  }),
-};
+  formatTitle(item: Show) {
+    return `${item.title} (${dateToString(item.date)})`;
+  }
+
+  addAct() {
+    this.show.acts.push(new Act(uuid(), ""));
+  }
+
+  save() {
+    const valid = this.form.validate();
+    if (!valid) {
+      this.$nextTick(() => {
+        const el = this.$el.querySelector(".v-messages.error--text");
+        el?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "center",
+        });
+      });
+      return;
+    }
+
+    this.overlay = true;
+    db.saveShow(this.show).then(() => {
+      if (this.isSignedIn) {
+        this.overlay = false;
+      } else {
+        this.$router.push({ name: "ThankYou", params: { id: this.show.id! } });
+      }
+    });
+    if (this.isSignedIn) {
+      db.saveInfo(this.info);
+    }
+  }
+  removeAct(g: number) {
+    this.show.acts.splice(g, 1);
+  }
+  showSelected(sel: ScheduledShow) {
+    this.show.title = sel.title;
+    this.show.date = sel.date;
+    this.show.timeStart = sel.timeStart;
+    this.show.timeEnd = sel.timeEnd;
+    this.show.residency = sel.residency;
+    this.show.eventRef = sel.eventRef;
+    const nav = this.$store.navigation;
+    nav[nav.length - 1].text = this.show.title;
+  }
+  titleChanged() {
+    if (!/^[0-9]*$/.test(this.show.number)) {
+      this.$nextTick(() => {
+        this.show.number = this.show.number.replace(/\D/g, "");
+      });
+    } else {
+      const nav = this.$store.navigation;
+      nav[nav.length - 1].text = this.show.title;
+    }
+  }
+}
 </script>
 
 
@@ -282,12 +316,8 @@ export default {
 .large-input.v-input input {
   max-height: 64px;
 }
-.large-input.v-input .v-input__prepend-inner, 
+.large-input.v-input .v-input__prepend-inner,
 .large-input.v-input .v-input__append-inner {
   margin-top: 20px;
-}
-
-h2 {
-  color: blue;
 }
 </style>
